@@ -15,8 +15,8 @@ from requests_oauthlib import OAuth1, OAuth1Session
 
 
 # resource credentials
-consumer_key = '100nS25Qfq68rYNEKWvniTFK0'
-consumer_secret = 'E3tEh23FpQADl4LBYTb3GrI4m6LdI7Zjh8lBVWVlt0J1JPNpR8'
+consumer_key = ''
+consumer_secret = ''
 
 # callback URL
 callback_uri = 'http://127.0.0.1:8080/callback'
