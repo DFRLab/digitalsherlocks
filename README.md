@@ -6,7 +6,7 @@
 ---
 
 
-[![license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/PytorchLightning/pytorch-lightning/blob/master/LICENSE)
+[![license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/DFRLab/digitalsherlocks/blob/main/LICENSE)
 
 ---
 
