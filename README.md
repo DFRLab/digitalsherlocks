@@ -6,7 +6,7 @@
 ---
 
 
-[![ReadTheDocs](https://medium.com/dfrlab)](https://medium.com/dfrlab)
+[![Python](http://ForTheBadge.com/images/badges/made-with-python.svg)]()
 [![license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/DFRLab/digitalsherlocks/blob/main/LICENCE)
 
 ---
