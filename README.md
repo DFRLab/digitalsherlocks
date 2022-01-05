@@ -6,7 +6,7 @@
 ---
 
 
-[![ReadTheDocs]()]()
+[![ReadTheDocs](https://medium.com/dfrlab)](https://medium.com/dfrlab)
 [![license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/DFRLab/digitalsherlocks/blob/main/LICENCE)
 
 ---
