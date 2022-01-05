@@ -6,7 +6,8 @@
 ---
 
 
-[![Python](http://ForTheBadge.com/images/badges/made-with-python.svg)]()
+[![python](http://ForTheBadge.com/images/badges/made-with-python.svg)]()
+[![downloads](https://img.shields.io/github/downloads/DFRLab/digitalsherlocks/total.svg)]()
 [![license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/DFRLab/digitalsherlocks/blob/main/LICENCE)
 
 ---
