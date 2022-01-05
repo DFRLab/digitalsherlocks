@@ -10,3 +10,6 @@ data/
 # ignore config file
 **/config
 config/
+
+# readme template
+readme_template.md
