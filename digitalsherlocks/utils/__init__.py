@@ -219,10 +219,10 @@ def load_credentials():
     Loads Twitter API credentials
     '''
     return {
-        'token': '',
-        'token_secret': '',
-        'consumer_key': '',
-        'consumer_secret': ''
+        'token': '838846188271120384-Ae2ZTjblzsuiYXFQWzX8DbAqhZTAfKS',
+        'token_secret': 'UXWHUJHUibYMZJPSHuyWcIfAhsvILuPxcSyQkhKtV80RM',
+        'consumer_key': 'nSigahgpmYQcuuU3LqlKhfOhM',
+        'consumer_secret': '4Rp9Hd6HuTTTJombqfFAlZpNrvYZ9gmY1iXcaKqpqXPKUSWIkm'
     }
 
 

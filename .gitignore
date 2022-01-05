@@ -4,4 +4,9 @@ __pycache__/
 .vscode/
 
 # ignore data folder
+**/data
 data/
+
+# ignore config file
+**/config
+config/
