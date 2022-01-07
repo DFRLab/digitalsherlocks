@@ -1,8 +1,8 @@
 beautifulsoup4==4.9.3
 html5lib==1.1
-pandas==1.1.0
-pyfiglet==0.8.post1
-twitter==1.19.3
-w3lib==1.22.0
-tqdm==4.61.1
 networkx==2.5.1
+numpy==1.21.0
+pandas==1.2.5
+pyfiglet==0.8.post1
+tqdm==4.61.1
+twitter==1.19.3

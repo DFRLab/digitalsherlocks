@@ -11,5 +11,7 @@ data/
 **/config
 config/
 
-# readme template
-readme_template.md
+# Ignore template files
+templates/
+**/template.py
+template.py
