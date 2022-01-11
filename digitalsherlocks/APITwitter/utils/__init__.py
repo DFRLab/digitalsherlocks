@@ -213,35 +213,9 @@ def create_db_file(folder, sqlpath):
     return conn, cursor
 
 
-# load credentials
-def load_credentials():
-    '''
-    Loads Twitter API credentials
-    '''
-    return {
-        'token': '',
-        'token_secret': '',
-        'consumer_key': '',
-        'consumer_secret': ''
-    }
 
 
-# twitter authentication
-def twitter_auth():
-    '''
-    Twitter authentication
-    '''
-    credentials = load_credentials()
 
-    # credentials
-    tkn = credentials['token']
-    tkn_secret = credentials['token_secret']
-    consumer_k = credentials['consumer_key']
-    consumer_secret = credentials['consumer_secret']
-
-    # authenticate
-    Auth = OAuth(tkn, tkn_secret, consumer_k, consumer_secret)
-    return Twitter(auth=Auth)
 
 
 '''

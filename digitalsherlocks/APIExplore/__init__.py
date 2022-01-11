@@ -2,5 +2,7 @@
 
 # =========================================
 # digitalsherlocks
-# A DFRLab project - @estebanpdl
+# A DFRLab project
+#
+# Author: @estebanpdl
 # =========================================
