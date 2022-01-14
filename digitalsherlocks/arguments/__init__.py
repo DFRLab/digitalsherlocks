@@ -71,17 +71,17 @@ class ProcessArguments(object):
 	'''
 	'''
 
-	def __init__(self, kwargs):
+	def __init__(self, args):
 		'''
 		'''
 
-		if not kwargs:
+		if not args:
 			args = CollectArguments()
-			kwargs = args._generate_args()
+			args = args._generate_args()
 
-		self.kwargs = kwargs
+		self.args = args
 		
 	def get_parameters(self):
 		'''
 		'''
-		return self.kwargs
+		return self.args

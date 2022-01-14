@@ -85,6 +85,8 @@ def main():
     # creating Twitter argument group  
     twitter_args = twitter.add_argument_group('Arguments')
 
+    
+
     # adding Twitter arguments
     twitter_args.add_argument(
         '--foo',
@@ -93,25 +95,24 @@ def main():
         help='foo'
     )
 
-    # verify arguments
-    arguments = sys.argv
-    if len(arguments) == 1:
-        '''
 
-        Trigger -> collect parameters from user 
-        '''
-        kwargs = ProcessArguments({})
-        args = kwargs.get_parameters()
 
-    else:
-        '''
+    # get arguments
+    args = vars(parser.parse_args())
 
-        Parse Arguments
-        '''
-        args = vars(parser.parse_args())
+    '''
 
-    # define arguments and type of usage
-    print (args)
+    Process arguments
+
+    if not arguments:
+        Trigger -> collect parameters from user
+
+    '''
+    kwargs = ProcessArguments(args)
+
+    # get parameters
+    parameters = kwargs.get_parameters()
+    print (parameters)
 
 
 # execute
