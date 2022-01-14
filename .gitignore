@@ -11,10 +11,14 @@ data/
 **/config
 config/
 
-# Ignore template files
+# Ignore template and temporary files
 templates/
 **/template.py
 template.py
+**/tmp
+tmp/
+**/build
+build/
 
 # Ignore test data folders
 **/test-data

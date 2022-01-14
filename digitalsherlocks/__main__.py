@@ -25,8 +25,6 @@ message = '''
 print (font.renderText(message))
 
 
-
-
 # import modules
 import sys
 
@@ -34,6 +32,8 @@ import sys
 from argparse import (
     ArgumentParser, RawTextHelpFormatter
 )
+
+from arguments import ProcessArguments
 
 
 def main():
@@ -68,6 +68,7 @@ def main():
     cli_args = cli.add_subparsers(
         title='CLI Arguments',
         description='',
+        dest='service',
         metavar='subcommand\n'   
     )
 
@@ -94,15 +95,13 @@ def main():
 
     # verify arguments
     arguments = sys.argv
-    if not arguments:
+    if len(arguments) == 1:
         '''
 
         Trigger -> collect parameters from user 
         '''
-
-        args = None
-
-        pass
+        kwargs = ProcessArguments({})
+        args = kwargs.get_parameters()
 
     else:
         '''
