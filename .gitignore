@@ -23,3 +23,7 @@ build/
 # Ignore test data folders
 **/test-data
 test-data/
+
+# Ignore digitalsherlocks-dev executable
+**/digitalsherlocks-dev.exe
+digitalsherlocks-dev.exe
