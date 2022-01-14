@@ -5,7 +5,10 @@
 # A DFRLab project
 #
 # Author: @estebanpdl
+#
+# File: Twitter user authentication.
 # =========================================
+
 
 '''
 
@@ -44,8 +47,8 @@ class HTTPHandler(BaseHTTPRequestHandler):
 		self.end_headers()
 
 		# Render HTML file
-		fl = 'digitalsherlocks/callback/index'
-		url = f'https://dfrlab.s3.us-west-2.amazonaws.com/{fl}.html'
+		path = 'digitalsherlocks/callback/index.html'
+		url = f'https://dfrlab.s3.us-west-2.amazonaws.com/{path}'
 		
 		# Get HTML file
 		fp = requests.get(url)		
@@ -129,16 +132,16 @@ class TwitterAuthentication(object):
 	Twitter User Authentication
 	'''
 
-	# Request access tokens
+	# Request API credentials
 
 	'''
 
 	URL attrs
 	'''
-	PATH = 'digitalsherlocks/credentials'
+	PATH = 'digitalsherlocks/access/credentials.json'
 
 	# URL request
-	URL = f'https://dfrlab.s3.us-west-2.amazonaws.com/{PATH}.json'
+	URL = f'https://dfrlab.s3.us-west-2.amazonaws.com/{PATH}'
 	REQ = requests.get(URL)
 
 	# Twitter API credentials
@@ -226,15 +229,14 @@ class TwitterAuthentication(object):
 		webbrowser.open(authorization_url)
 
 		# Get verifier
+		print ('')
 		self.verifier = input('PIN: ').strip()
 
 		# Stop Localhost server
 		self.SERVER_SESSION.stop()
 
 		# Log
-		print ('')
-		print ('PIN COLLECTED')
-		print ('...')
+		print ('Authentication completed')
 		print ('')
 
 		# Get access tokens

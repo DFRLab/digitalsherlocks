@@ -15,3 +15,7 @@ config/
 templates/
 **/template.py
 template.py
+
+# Ignore test data folders
+**/test-data
+test-data/

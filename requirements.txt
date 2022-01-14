@@ -6,3 +6,6 @@ pandas==1.2.5
 pyfiglet==0.8.post1
 tqdm==4.61.1
 twitter==1.19.3
+cryptography==36.0.1
+requests==2.27.1
+requests-oauthlib==1.3.0
