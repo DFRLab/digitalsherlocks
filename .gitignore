@@ -7,11 +7,14 @@ __pycache__/
 **/data
 data/
 
-# ignore config file
+# ignore config files
 **/config
 config/
+**/twitter_config
+twitter_config/
 
 # Ignore template and temporary files
+resources/
 templates/
 **/template.py
 template.py

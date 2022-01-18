@@ -26,6 +26,14 @@ from APITwitter.utils import (
 # import database
 from APITwitter.database import Database
 
+'''
+
+import storage <tmp code>
+
+TODO: Storage class.
+'''
+from APITwitter.storage import insert_data
+
 
 # API class
 class API(object):
@@ -40,11 +48,16 @@ class API(object):
 		self.kwargs = kwargs
 
 		# Twitter API user connection
-		# self.TwitterAuth = TwitterAuthentication()
-		# self.TwitterAPI = self.TwitterAuth.connect()
+		print ('')
+		print ('Twitter user authentication.')
+		self.TwitterAuth = TwitterAuthentication()
+		self.TwitterAPI = self.TwitterAuth.connect()
 
 		# Get working directory
 		self.wd = self.kwargs['wd']
+
+		# Requested attrs
+		self.timezone = self.kwargs['timezone']
 
 		# Get database-related arguments
 		self.update_database = self.kwargs['update_database']
@@ -76,8 +89,8 @@ class API(object):
 		}
 
 		# Database instance
-		self.db = Database()
-		return self.db._connect_db(**db_args)
+		self.db = Database(**db_args)
+		return self.db._connect_db()
 
 
 	def _insert_data(self):
@@ -91,14 +104,12 @@ class API(object):
 			self.db_connection, self.db_cursor = self._get_db_conn()
 
 		# Insert data
-
-		'''
-
-		Insert data
-		'''
-
-		print (True)
-
+		insert_data(
+			self.db_connection,
+			self.db_cursor,
+			self.data,
+			self.timezone
+		)
 
 	def _endpoint_status_parser(self, endpoint_status):
 		'''
@@ -118,7 +129,7 @@ class API(object):
 		Checks rate limits
 		'''
 		status = self.TwitterAPI.application.rate_limit_status()
-		resource = status['resources']['statuses']
+		resource = status['resources']['statuses'][endpoint_status]
 
 		# Resources
 		remaining = resource['remaining']
@@ -176,10 +187,18 @@ class API(object):
 		'''
 		# Clean Twitter arguments
 		self.kwargs = clean_twitter_arguments(self.kwargs)
+
+		'''
+
+		LOGS
+		'''
+		try:
+			u = self.kwargs['screen_name']
+		except KeyError:
+			u = self.kwargs['user_id']
+
 		print ('')
-		print ('')
-		print (self.kwargs)
-		print ('')
+		print (f'Downloading timeline from user {u}')
 		print ('')
 
 		'''
@@ -187,7 +206,7 @@ class API(object):
 		Check rate limits
 		'''
 		endpoint_status = '/statuses/user_timeline'
-		# self._sleep_application(endpoint_status)
+		self._sleep_application(endpoint_status)
 
 		'''
 
@@ -195,53 +214,50 @@ class API(object):
 
 		Endpoint: user_timeline
 		'''
-		# self.data = []
-		# try:
-		# 	statuses = self.TwitterAPI.statuses.user_timeline(
-		# 		**self.kwargs
-		# 	)
-		# 	if len(statuses) > 0:
-		# 		self.data.extend(statuses)
+		self.data = []
+		try:
+			statuses = self.TwitterAPI.statuses.user_timeline(
+				**self.kwargs
+			)
+			if len(statuses) > 0:
+				self.data.extend(statuses)
 
-		# 		# Get max id
-		# 		max_id = get_max_id(statuses)
+				# Get max id
+				max_id = get_max_id(statuses)
 
-		# 		# Download up to 3,200 user tweets
-		# 		while len(statuses) > 0:
-		# 			self.kwargs['max_id'] = max_id
-		# 			statuses = self.TwitterAPI.statuses.user_timeline(
-		# 				**self.kwargs
-		# 			)
+				# Download up to 3,200 user tweets
+				while len(statuses) > 0:
+					self.kwargs['max_id'] = max_id
+					statuses = self.TwitterAPI.statuses.user_timeline(
+						**self.kwargs
+					)
 
-		# 			if len(statuses) > 0:
-		# 				self.data.extend(statuses)
-		# 				max_id = get_max_id(statuses)
+					if len(statuses) > 0:
+						self.data.extend(statuses)
+						max_id = get_max_id(statuses)
 
-		# except (TwitterHTTPError, HTTPError, TwitterError) as e:
-		# 	error = e.__class__.__name__
-		# 	e_type, e_value, e_traceback = sys.exc_info()
-		# 	if error == 'TwitterError':
+		except (TwitterHTTPError, HTTPError, TwitterError) as e:
+			error = e.__class__.__name__
+			e_type, e_value, e_traceback = sys.exc_info()
+			if error == 'TwitterError':
 
-		# 		# Retry < API request failed >
-		# 		print ('')
-		# 		print (error)
-		# 		print (f'E TYPE ---> {e_type}')
-		# 		print (f'E VALUE ---> {e_value}')
-		# 		print (f'E TRACEBACK ---> {e_traceback}')
+				# Retry < API request failed >
+				print ('')
+				print (error)
+				print (f'E TYPE ---> {e_type}')
+				print (f'E VALUE ---> {e_value}')
+				print (f'E TRACEBACK ---> {e_traceback}')
 
-		# 	pass
+			pass
 
-		# # Insert data to database
-
-		'''
-		LOG RESPONSE
-
-		INSERT DATA
-		'''
-
+		# Insert data to database
+		print ('')
+		print ('Inserting data into database')
 		self._insert_data()
+		print ('done.')
+		print ('')
 
-		# return self.data
+		return self.data
 
 
 	def user_connections(self, **kwargs):

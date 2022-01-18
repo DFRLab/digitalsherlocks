@@ -4,15 +4,15 @@
 '''
 
 # import storage local modules
-from storage.media_tweet import insert_media_tweet_data
-from storage.media_video import insert_media_video_data
-from storage.mentions import insert_mentions_data
-from storage.hashtags import insert_hashtags_data
-from storage.users import insert_users_data
-from storage.place import insert_place_data
-from storage.tweet import insert_tweet_data
-from storage.media import insert_media_data
-from storage.urls import insert_urls_data
+from APITwitter.storage.media_tweet import insert_media_tweet_data
+from APITwitter.storage.media_video import insert_media_video_data
+from APITwitter.storage.mentions import insert_mentions_data
+from APITwitter.storage.hashtags import insert_hashtags_data
+from APITwitter.storage.users import insert_users_data
+from APITwitter.storage.place import insert_place_data
+from APITwitter.storage.tweet import insert_tweet_data
+from APITwitter.storage.media import insert_media_data
+from APITwitter.storage.urls import insert_urls_data
 
 # main function -> insert data
 def insert_data(db_connection, cursor, raw_data, timezone):

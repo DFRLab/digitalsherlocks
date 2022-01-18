@@ -15,7 +15,7 @@ import time
 
 # import from modules
 from arguments.utils import (
-	aligntext
+	aligntext, generate_wd
 )
 
 # Collect Arguments class
@@ -288,7 +288,15 @@ class ProcessArguments(object):
 		
 	def _get_arguments(self):
 		'''
+
+		Returns arguments
 		'''
+
+		# Generate working directory
+		update_database_status = self.args['update_database']
+		if not update_database_status:
+			self.args['wd'] = generate_wd(self.args['wd'])
+
 		return self.args
 
 	'''

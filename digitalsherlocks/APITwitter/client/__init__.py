@@ -16,6 +16,10 @@ Twitter User Authentication
 
 '''
 
+# import modules
+import os
+import configparser
+
 # import server modules
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -165,6 +169,9 @@ class TwitterAuthentication(object):
 		self.verifier = None
 		self.api_access = None
 
+		# Digitalsherlocks
+		self.app = 'digitalsherlocks'
+
 	def _api_session(self):
 		'''
 
@@ -213,6 +220,36 @@ class TwitterAuthentication(object):
 			'user_token_secret': res['oauth_token_secret']
 		}
 
+	def _save_api_tokens(self, tokens):
+		'''
+
+		Write API keys for future use
+			- User token
+			- User token secret
+		'''
+		config = configparser.ConfigParser()
+
+		# Creating diectory in users' .config folder
+		config_folder = os.path.join(
+			os.path.expanduser('~'), '.config', self.app
+		)
+		if not os.path.exists(config_folder):
+			os.makedirs(config_folder, exist_ok=True)
+
+		# Write API keys
+		config.add_section('API')
+		config.set(
+			'API', 'token', tokens['user_token']
+		)
+		config.set(
+			'API', 'token_secret', tokens['user_token_secret']
+		)
+
+		# Config file
+		config_file = f'{config_folder}/api.ini'
+		with open(config_file, mode='w', encoding='utf-8') as f:
+			config.write(f)
+
 	def _request_user_verification(self):
 		'''
 		'''
@@ -229,8 +266,7 @@ class TwitterAuthentication(object):
 		webbrowser.open(authorization_url)
 
 		# Get verifier
-		print ('')
-		self.verifier = input('PIN: ').strip()
+		self.verifier = input('Please, add PIN: ').strip()
 
 		# Stop Localhost server
 		self.SERVER_SESSION.stop()
@@ -248,6 +284,9 @@ class TwitterAuthentication(object):
 
 		user_access_tokens = self._get_access_tokens(**params)
 
+		# Save API keys
+		self._save_api_tokens(user_access_tokens)
+
 		return {
 			'token': user_access_tokens['user_token'],
 			'token_secret': user_access_tokens['user_token_secret'],
@@ -258,7 +297,28 @@ class TwitterAuthentication(object):
 	def connect(self):
 		'''
 		'''
-		self.api_access = self._request_user_verification()
+		config_folder = os.path.join(
+			os.path.expanduser('~'), '.config', self.app
+		)
+		config_file = f'{config_folder}/api.ini'
+		if os.path.isfile(config_file):
+			'''
+
+			Read api.ini file
+			'''
+			config = configparser.ConfigParser()
+			config.read(config_file)
+
+			# Build api access
+			self.api_access = {
+				'token': config['API']['token'],
+				'token_secret': config['API']['token_secret'],
+				'consumer_key': self.consumer_key,
+				'consumer_secret': self.consumer_secret
+			}
+		else:
+			# Build api acces via user authentication
+			self.api_access = self._request_user_verification()
 		
 		# Connect to Twitter API
 		Auth = OAuth(**self.api_access)

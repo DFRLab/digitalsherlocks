@@ -12,7 +12,7 @@ from utils import clean_text, get_tweet_source, timestamp_attrs, bag_of_words, \
     to_string
 
 # import database keys
-from assets import database_tweet_keys, order_columns_to_sql
+from APITwitter.assets import database_tweet_keys, order_columns_to_sql
 
 # creating functions
 def process_queries(data, key):

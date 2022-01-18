@@ -47,7 +47,7 @@ from argparse import (
 
 from arguments import ProcessArguments
 from arguments.utils import (
-    aligntext, generate_wd
+    aligntext
 )
 
 # Twitter
@@ -116,7 +116,7 @@ def main():
         help=aligntext('''Output directory. Specifies an optional
         working directory. Default: current working directory.
         '''),
-        metavar='dir',
+        metavar='WORKPATH',
         dest='wd'
     )
 
@@ -182,7 +182,7 @@ def main():
         database using this path. Argument is
         required, if <update database> is true.
         '''),
-        metavar='path',
+        metavar='FILE.db',
         dest='dbpath',
         required='--update-database' in sys.argv
     )
@@ -196,7 +196,7 @@ def main():
         <db path> or an existing database was added using the
         --db-path argument.
         '''),
-        metavar='name',
+        metavar='NAME',
         dest='dbname'
     )
 
@@ -339,14 +339,6 @@ def main():
     Get arguments
     '''
     args = vars(parser.parse_args())
-
-    
-    '''
-
-    Generate / Use working directory
-    '''
-    args['wd'] = generate_wd(args['wd'])
-
     
     '''
 
@@ -356,6 +348,11 @@ def main():
         Trigger -> collect parameters from user
     '''
     kwargs = ProcessArguments(args)
+    print ('')
+    print ('')
+    print ('Processing arguments.')
+    print ('')
+    
 
 
     '''
@@ -363,30 +360,13 @@ def main():
     TEST ARGUMENTS
     '''
     args = kwargs._get_arguments()
+    test_api_twitter = API(**args)
+
+    # users
+    test_data = test_api_twitter.user_timeline()
+    print (f'Total tweets ---> {len(test_data)}')
     print ('')
     print ('')
-    print (args)
-    print ('')
-    print ('')
-
-
-    # test_api_twitter = API(**args)
-
-    # # users
-    # test_data = test_api_twitter.user_timeline()
-    # print ('')
-    # print ('')
-    # print ('')
-    # # print (f'Total tweets ---> {len(test_data)}')
-    # print ('')
-    # print ('')
-
-
-
-
-
-
-
 
 
 

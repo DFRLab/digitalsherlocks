@@ -11,7 +11,7 @@ import pandas as pd
 from utils import to_string
 
 # import database keys
-from assets import database_tweet_keys, order_columns_to_sql
+from APITwitter.assets import database_tweet_keys, order_columns_to_sql
 
 # creating functions
 def process_queries(data, key):

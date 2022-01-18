@@ -62,10 +62,6 @@ class Database(object):
 			name = 'data' if self.dbname == None else self.dbname
 			dbfile = f'{self.wd}{name}.db'
 
-			'''
-			LOG RESPONSE
-			'''
-
 		else:
 			isfile = os.path.isfile(self.dbpath)
 			if not isfile and self.update_database == True:
@@ -80,14 +76,10 @@ class Database(object):
 			else:
 				dbfile = self.dbpath
 
-				'''
-				LOG RESPONSE
-				'''
-
 		return dbfile
 
 
-	def _connect_db(self, **kwargs):
+	def _connect_db(self):
 		'''
 
 		Connects to sqlite database
@@ -96,7 +88,7 @@ class Database(object):
 		dbfile = self._get_database_filename()
 
 		# Connect database
-		db_connection = sqlite3.connect(db_path)
+		db_connection = sqlite3.connect(dbfile)
 
 		# Get database cursor
 		db_cursor = db_connection.cursor()
@@ -113,17 +105,28 @@ class Database(object):
 			# Encoding database
 			db_cursor.execute('PRAGMA encoding')
 
-			# Execute script
-			sql_script = self._get_sqlfile(self.endpoint)
+			# Execute SQL script
+			sql_script = self._get_sqlfile()			
 			db_cursor.executescript(sql_script)
 
 			# Commit results
 			db_connection.commit()
 
+			'''
+
+			Add --> ABS PATH for dbfile
+			'''
+			print ('')
+			print (f'Database created at {dbfile}')
+			print ('')
+
 		'''
+		ELSE
+		
 		LOG RESPONSE
 
 		GET ARGUMENTS FROM THE EXISTING DATABASE, IF NEEDED
+			GET ENDPOINT. WHICH ENDPOINT WILL BE CALLED????
 		'''
 
 		return db_connection, db_cursor
