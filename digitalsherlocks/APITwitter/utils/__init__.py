@@ -26,7 +26,7 @@ def clean_twitter_arguments(args):
 	'''
 
 	Cleans twitter arguments.
-	Removes local argument: timezone
+	Removes local arguments: service, group, timezone, etc.
 	Removes None values.
 
 	Returns:
@@ -34,11 +34,15 @@ def clean_twitter_arguments(args):
 		dict
 
 	'''
-	# reference
-	l = ['timezone']
+	# local arguments
+	l = [
+		'wd', 'service', 'update_database', 'dbpath', 'dbname',
+		'endpoint', 'timezone'
+	]
 
-	# add tweet mode key
+	# adding API keys
 	args['tweet_mode'] = 'extended'
+	args['count'] = 200
 
 	# filter keys
 	return {

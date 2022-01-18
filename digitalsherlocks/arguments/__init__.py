@@ -59,20 +59,20 @@ class CollectArguments(object):
 			'service': service
 		}
 
-	def _twitter_group_parser(self, group_request):
+	def _twitter_endpoint_parser(self, endpoint_request):
 		'''
 
-		Group parser for Twitter API options
+		endpoint parser for Twitter API options
 		'''
-		group_request = aligntext(group_request)
+		endpoint_request = aligntext(endpoint_request)
 		opts = {
 			'1': 'users',
 			'2': 'tweets'
 		}
 
-		return opts[group_request]
+		return opts[endpoint_request]
 
-	def _twitter_group_options(self):
+	def _twitter_endpoint_options(self):
 		'''
 		'''
 		print ('')
@@ -85,7 +85,7 @@ class CollectArguments(object):
 		print ('1. A user timeline')
 		print ('2. Search tweets by hashtag or keywords')
 
-		# Get group
+		# Get endpoint
 		print ('')
 		gpo = input('> Option: ')
 
@@ -121,10 +121,10 @@ class CollectArguments(object):
 
 		return value
 
-	def _get_twitter_commands(self, group):
+	def _get_twitter_commands(self, endpoint):
 		'''
 
-		Gets twitter commands < arguments > by group
+		Gets twitter commands < arguments > by endpoint
 		'''
 
 		args = {
@@ -164,30 +164,29 @@ class CollectArguments(object):
 			}
 		}
 
-		action = args[group].copy()
+		action = args[endpoint].copy()
 
 		'''
 
 		Log type of action
 		'''
-		print ('')
-		print ('')
-		print (
-			aligntext(
-				f'''
-					Select API parameters for the Twitter option: {
-						group.capitalize()
-					}
-				'''
-			)
+		type_of_action = aligntext(
+			f'''
+				Select API parameters for the Twitter option: {
+					endpoint.capitalize()
+				}
+			'''
 		)
-		print ('===================================================')
+		print ('')
+		print ('')
+		print (type_of_action)
+		print ('=' * len(type_of_action))
 		print ('')
 
 		# Focus
 		time.sleep(5)
 
-		# Iterate action based on group
+		# Iterate action based on endpoint
 		for k, v in action.items():
 			action[k] = aligntext(
 				input(
@@ -214,19 +213,19 @@ class CollectArguments(object):
 		'''
 		tree = {
 			'twitter': {
-				'group': self._twitter_group_parser(
-					self._twitter_group_options()
+				'endpoint': self._twitter_endpoint_parser(
+					self._twitter_endpoint_options()
 				)
 			}
 		}
 
 		commands = {
 			'twitter': self._get_twitter_commands(
-				tree[service]['group']
+				tree[service]['endpoint']
 			)
 		}
 
-		# Get custom service argument (i.e. group for Twitter)
+		# Get custom service argument (i.e. endpoint for Twitter)
 		args = tree[service]
 
 		# Updating commands and custom service argument

@@ -10,6 +10,8 @@
 # =========================================
 
 # import modules
+import os
+import sys
 import sqlite3
 import requests
 
@@ -17,41 +19,111 @@ import requests
 class Database(object):
 	'''
 	'''
-	def _get_sqlfile(self, sql_file):
+	def __init__(self, **kwargs):
 		'''
+
+		kwargs:
+			- wd
+				[working directory]
+			- update_database
+				[if an existing database needs to be updated]
+			- dbpath
+				[Existing database]
+			- dbname
+				[Custom database name]
+			- endpoint
+				[Which SQL file will be readed]
 		'''
-		# Get SQL file
-		path = f'digitalsherlocks/sql/{sql_file}.sql'
+
+		# Instance variables
+		self.wd = kwargs['wd']
+		self.update_database = kwargs['update_database']
+		self.dbpath = kwargs['dbpath']
+		self.dbname = kwargs['dbname']
+		self.endpoint = kwargs['endpoint']
+
+	def _get_sqlfile(self):
+		'''
+
+		Reads a sql file hosted on AWS s3.
+		'''
+		path = f'digitalsherlocks/sql/{self.endpoint}.sql'
 		url = f'https://dfrlab.s3.us-west-2.amazonaws.com/{path}'
 
 		# URL Request
 		return requests.get(url).text
 
+	def _get_database_filename(self):
+		'''
+
+		Gets database filename.
+		'''
+		if self.dbpath == None:
+			name = 'data' if self.dbname == None else self.dbname
+			dbfile = f'{self.wd}{name}.db'
+
+			'''
+			LOG RESPONSE
+			'''
+
+		else:
+			isfile = os.path.isfile(self.dbpath)
+			if not isfile and self.update_database == True:
+				print ('')
+				print ('')
+				print (f'The file {self.dbpath} was not found.')
+				print ('Please try again with the correct file.')
+				print ('')
+
+				# Quit program
+				sys.exit()
+			else:
+				dbfile = self.dbpath
+
+				'''
+				LOG RESPONSE
+				'''
+
+		return dbfile
+
+
 	def _connect_db(self, **kwargs):
 		'''
+
+		Connects to sqlite database
 		'''
-		# Get variables
-		db_path = kwargs['db_path']
-		sql_file = kwargs['sql_file']
-		update_existing_db = kwargs['update_existing_db']
+		# Get database filename
+		dbfile = self._get_database_filename()
 
 		# Connect database
 		db_connection = sqlite3.connect(db_path)
 
-		# Get cursor
+		# Get database cursor
 		db_cursor = db_connection.cursor()
 
-		if not update_existing_db:
+
+		'''
+		Database status:
+
+			- Check if an existing database will be updated.
+		'''
+
+		if not self.update_database:
 
 			# Encoding database
 			db_cursor.execute('PRAGMA encoding')
 
 			# Execute script
-			sql_script = self._get_sqlfile(sql_file)
+			sql_script = self._get_sqlfile(self.endpoint)
 			db_cursor.executescript(sql_script)
 
 			# Commit results
 			db_connection.commit()
 
-		return db_connection, db_cursor
+		'''
+		LOG RESPONSE
 
+		GET ARGUMENTS FROM THE EXISTING DATABASE, IF NEEDED
+		'''
+
+		return db_connection, db_cursor

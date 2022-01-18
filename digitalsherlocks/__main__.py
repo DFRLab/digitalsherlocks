@@ -47,17 +47,20 @@ from argparse import (
 
 from arguments import ProcessArguments
 from arguments.utils import (
-    aligntext
+    aligntext, generate_wd
 )
 
+# Twitter
+from APITwitter import API
 
+# main function
 def main():
     '''
 
     main function
     '''
     
-    # creating parser
+    # creating argument parser
     parser = ArgumentParser(
         prog='digitalsherlocks'
     )
@@ -88,13 +91,33 @@ def main():
         Allows using tool through the command line
         ==========================================
         ''',
-        help='Allows using digitalsherlocks through the command line',
+        help='Allows using digitalsherlocks through the command line.',
         epilog='''
         
         Examples:
 
-        $ digitalsherlocks cli twitter -h
+        Add a custom working directory.
+          $ digitalsherlocks cli -wd path/to/my/folder
+
+        Shows help message
+          $ digitalsherlocks cli -h
+          $ digitalsherlocks cli twitter -h
         '''.lstrip()
+    )
+
+    '''
+
+    CLI Argument < working directory >
+    '''
+    cli.add_argument(
+        '-wd',
+        '--working-dir',
+        type=str,
+        help=aligntext('''Output directory. Specifies an optional
+        working directory. Default: current working directory.
+        '''),
+        metavar='dir',
+        dest='wd'
     )
 
     '''
@@ -108,11 +131,11 @@ def main():
         metavar='subcommand\n'
     )
 
+
     '''
 
     CLI Arguments: Twitter
     '''
-
     twitter = cli_args.add_parser(
         'twitter',
         formatter_class=indent_formatter,
@@ -120,20 +143,72 @@ def main():
         Connects to Twitter API using user authentication
         =================================================
         ''',
-        help='Connects to Twitter API using user authentication',
+        help='Connects to Twitter API using user authentication.',
         epilog='''
 
         Examples:
 
-        $ digitalsherlocks cli twitter users -h
+        Create a new database with a custom name
+          $ digitalsherlocks cli twitter --add-db-name myresearch
+
+        Update an existing database
+          $ digitalsherlocks cli twitter --update-database --db-path path/to/my/file.db
+
+        Shows help message for Twitter API users' endpoint
+          $ digitalsherlocks cli twitter users -h
         '''.lstrip()
     )
 
-    # creating Twitter sub parsers
+    
+    '''
+
+    Twitter database-related arguments
+    '''
+
+    # update an existing database
+    twitter.add_argument(
+        '--update-database',
+        help='Confirms if an existing database needs to be updated.',
+        action='store_true',
+        default=False,
+        dest='update_database'
+    )
+    
+    # database name
+    twitter.add_argument(
+        '--db-path',
+        type=str,
+        help=aligntext('''Reads an existing database or creates a new
+        database using this path. Argument is
+        required, if <update database> is true.
+        '''),
+        metavar='path',
+        dest='dbpath',
+        required='--update-database' in sys.argv
+    )
+
+    # custom database name
+    twitter.add_argument(
+        '--add-db-name',
+        type=str,
+        help=aligntext('''Creates a custom database name. Default:
+        data.db. This argument will not take into account if a
+        <db path> or an existing database was added using the
+        --db-path argument.
+        '''),
+        metavar='name',
+        dest='dbname'
+    )
+
+
+    '''
+
+    Creating Twitter sub parsers
+    '''
     twitter_subparsers = twitter.add_subparsers(
         title='Twitter arguments',
         description='',
-        dest='group',
+        dest='endpoint',
         metavar='subcommand\n'
     )
 
@@ -149,7 +224,7 @@ def main():
         Uses Twitter users-related endpoints
         ====================================
         ''',
-        help='Uses Twitter users-related endpoints',
+        help='Uses Twitter users-related endpoints.',
         epilog='''
 
         Examples:
@@ -172,10 +247,11 @@ def main():
         'Twitter API users options',
         description=''
     )
+
     
     '''
 
-    User timeline-related arguments
+    Twitter: users timeline-related arguments
     '''
 
     # user name timeline
@@ -183,7 +259,7 @@ def main():
         '--user-name-timeline',
         type=str,
         help=aligntext('''Returns a collection of the most recent
-        Tweets posted by the user indicated by the screen_name
+        Tweets posted by the user indicated by the screen_name.
         '''),
         metavar='handlename',
         dest='screen_name',
@@ -195,7 +271,7 @@ def main():
         '--user-id-timeline',
         type=str,
         help=aligntext('''Returns a collection of the most recent
-        Tweets posted by the user indicated by the user_id
+        Tweets posted by the user indicated by the user_id.
         '''),
         metavar='id',
         dest='user_id',
@@ -206,7 +282,7 @@ def main():
     twitter_user_args.add_argument(
         '--exclude-replies',
         help=aligntext('''Prevents replies from appearing in the
-        returned timeline. Default: False
+        returned timeline. Default: False.
         '''),
         action='store_true',
         default=False,
@@ -216,17 +292,62 @@ def main():
     # include retweets
     twitter_user_args.add_argument(
         '--include-rts',
-        help=aligntext('''Prevents retweets from appearing in the
-        returned timeline. Default: False
+        help=aligntext('''Includes retweets in the returned timeline.
+        Default: False.
         '''),
         action='store_true',
         default=False,
         dest='include_rts'
     )
 
-    # get arguments
+    # since id
+    twitter_user_args.add_argument(
+        '--since-id',
+        type=str,
+        help=aligntext('''Returns results with an ID greater than
+        (that is, more recent than) the specified ID. Default 1.
+        '''),
+        metavar='id',
+        default='1',
+        dest='since_id'
+    )
+
+    # max id
+    twitter_user_args.add_argument(
+        '--max-id',
+        type=str,
+        help=aligntext('''Returns results with an ID less than
+        (that is, older than) or equal to the specified ID.
+        '''),
+        metavar='id',
+        dest='max_id'
+    )
+
+    # timezone
+    twitter_user_args.add_argument(
+        '-tz',
+        '--timezone',
+        type=str,
+        help='Converts UTC data from posts into specified timezone',
+        metavar='tz',
+        dest='timezone'
+    )
+
+
+    '''
+
+    Get arguments
+    '''
     args = vars(parser.parse_args())
 
+    
+    '''
+
+    Generate / Use working directory
+    '''
+    args['wd'] = generate_wd(args['wd'])
+
+    
     '''
 
     Process arguments
@@ -236,15 +357,37 @@ def main():
     '''
     kwargs = ProcessArguments(args)
 
-    # TEST get arguments
-    args = kwargs._get_arguments()
 
-    print ('')
+    '''
+    
+    TEST ARGUMENTS
+    '''
+    args = kwargs._get_arguments()
     print ('')
     print ('')
     print (args)
     print ('')
     print ('')
+
+
+    # test_api_twitter = API(**args)
+
+    # # users
+    # test_data = test_api_twitter.user_timeline()
+    # print ('')
+    # print ('')
+    # print ('')
+    # # print (f'Total tweets ---> {len(test_data)}')
+    # print ('')
+    # print ('')
+
+
+
+
+
+
+
+
 
 
 # execute
