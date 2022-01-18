@@ -8,8 +8,6 @@ __pycache__/
 data/
 
 # ignore config files
-**/config
-config/
 **/twitter_config
 twitter_config/
 
