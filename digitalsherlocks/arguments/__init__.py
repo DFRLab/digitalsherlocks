@@ -177,6 +177,7 @@ class CollectArguments(object):
 				}
 			'''
 		)
+		
 		print ('')
 		print ('')
 		print (type_of_action)

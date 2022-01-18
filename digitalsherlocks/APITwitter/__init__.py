@@ -13,6 +13,8 @@
 # import modules
 import sys
 import time
+import logging
+
 
 from APITwitter.client import TwitterAuthentication
 from twitter import TwitterHTTPError, TwitterError
@@ -48,8 +50,7 @@ class API(object):
 		self.kwargs = kwargs
 
 		# Twitter API user connection
-		print ('')
-		print ('Twitter user authentication.')
+		logging.info('Twitter user authentication.')
 		self.TwitterAuth = TwitterAuthentication()
 		self.TwitterAPI = self.TwitterAuth.connect()
 
@@ -147,17 +148,16 @@ class API(object):
 			sleep_for = int(reset - time.time()) + 10
 
 			# Log action
-			print ('')
-			print ('')
-			print ('Application reached rate limits.')
-			print (f'Sleeping application for {sleep_for} secs...')
+			logging.warning('Application reached rate limits.')
+			logging.info(
+				f'Sleeping application for {sleep_for} secs...'
+			)
 
 			# Sleep application
 			time.sleep(sleep_for)
 
-			print ('Awake.')
-			print ('')
-			print ('')
+			# Awake
+			logging.info('Awake.')
 
 	'''
 
@@ -197,9 +197,7 @@ class API(object):
 		except KeyError:
 			u = self.kwargs['user_id']
 
-		print ('')
-		print (f'Downloading timeline from user {u}')
-		print ('')
+		logging.info(f'Downloading timeline from user {u}')
 
 		'''
 
@@ -214,48 +212,49 @@ class API(object):
 
 		Endpoint: user_timeline
 		'''
-		self.data = []
-		try:
-			statuses = self.TwitterAPI.statuses.user_timeline(
-				**self.kwargs
-			)
-			if len(statuses) > 0:
-				self.data.extend(statuses)
+		while True:
+			self.data = []
+			try:
+				statuses = self.TwitterAPI.statuses.user_timeline(
+					**self.kwargs
+				)
+				if len(statuses) > 0:
+					self.data.extend(statuses)
 
-				# Get max id
-				max_id = get_max_id(statuses)
+					# Get max id
+					max_id = get_max_id(statuses)
 
-				# Download up to 3,200 user tweets
-				while len(statuses) > 0:
-					self.kwargs['max_id'] = max_id
-					statuses = self.TwitterAPI.statuses.user_timeline(
-						**self.kwargs
-					)
+					# Download up to 3,200 user tweets
+					while len(statuses) > 0:
+						self.kwargs['max_id'] = max_id
+						statuses = self.TwitterAPI.statuses.user_timeline(
+							**self.kwargs
+						)
 
-					if len(statuses) > 0:
-						self.data.extend(statuses)
-						max_id = get_max_id(statuses)
+						if len(statuses) > 0:
+							self.data.extend(statuses)
+							max_id = get_max_id(statuses)
 
-		except (TwitterHTTPError, HTTPError, TwitterError) as e:
-			error = e.__class__.__name__
-			e_type, e_value, e_traceback = sys.exc_info()
-			if error == 'TwitterError':
+					break
 
-				# Retry < API request failed >
-				print ('')
-				print (error)
-				print (f'E TYPE ---> {e_type}')
-				print (f'E VALUE ---> {e_value}')
-				print (f'E TRACEBACK ---> {e_traceback}')
+			except (TwitterHTTPError, HTTPError, TwitterError) as e:
+				error = e.__class__.__name__
+				e_type, e_value, e_traceback = sys.exc_info()
+				if error == 'TwitterError':
 
-			pass
+					# Retry < API request failed >
+					if 'Incomplete JSON data collected' in e_value:
+						logging.error(
+							'Twitter Error connection. Retrying...'
+						)
+					
+						# Sleep
+						time.sleep(15)
+						continue
 
 		# Insert data to database
-		print ('')
-		print ('Inserting data into database')
+		logging.info('Inserting data into database')
 		self._insert_data()
-		print ('done.')
-		print ('')
 
 		return self.data
 

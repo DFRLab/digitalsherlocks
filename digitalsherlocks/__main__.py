@@ -29,16 +29,14 @@ print ('''
         =============================================================
 ''')
 print ('')
-print ('')
-print ('')
 
 '''
 
 Import modules
 '''
-
 import sys
 import shutil
+import logging
 
 # import from modules
 from argparse import (
@@ -59,12 +57,21 @@ def main():
 
     main function
     '''
+
+    # logging config
+    logging.basicConfig(
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+        level=logging.DEBUG
+    )
+
+    logging.info('Welcome')
+    logging.info('Started')
     
     # creating argument parser
     parser = ArgumentParser(
         prog='digitalsherlocks'
     )
-
     
     '''
 
@@ -347,27 +354,28 @@ def main():
     if not arguments:
         Trigger -> collect parameters from user
     '''
+    logging.info('Collecting arguments')
+    
     kwargs = ProcessArguments(args)
-    print ('')
-    print ('')
-    print ('Processing arguments.')
-    print ('')
-    
-
-
-    '''
-    
-    TEST ARGUMENTS
-    '''
     args = kwargs._get_arguments()
+    
+    logging.info('Arguments ready')
+
+
+    '''
+
+    Connecting to service
+    '''
+    logging.info('Connecting to service')
+
+
+
+
+    # TEST
     test_api_twitter = API(**args)
 
     # users
     test_data = test_api_twitter.user_timeline()
-    print (f'Total tweets ---> {len(test_data)}')
-    print ('')
-    print ('')
-
 
 
 # execute

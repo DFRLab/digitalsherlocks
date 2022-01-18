@@ -13,6 +13,7 @@
 import os
 import sys
 import sqlite3
+import logging
 import requests
 
 # Database class
@@ -65,11 +66,12 @@ class Database(object):
 		else:
 			isfile = os.path.isfile(self.dbpath)
 			if not isfile and self.update_database == True:
-				print ('')
-				print ('')
-				print (f'The file {self.dbpath} was not found.')
-				print ('Please try again with the correct file.')
-				print ('')
+				logging.error(
+					f'The file {self.dbpath} was not found.'
+				)
+				logging.error(
+					'Please try again with the correct file.'
+				)
 
 				# Quit program
 				sys.exit()
@@ -115,10 +117,11 @@ class Database(object):
 			'''
 
 			Add --> ABS PATH for dbfile
-			'''
+
 			print ('')
 			print (f'Database created at {dbfile}')
 			print ('')
+			'''
 
 		'''
 		ELSE
