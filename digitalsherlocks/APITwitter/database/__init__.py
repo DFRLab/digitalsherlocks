@@ -13,7 +13,6 @@
 import os
 import sys
 import sqlite3
-import logging
 import requests
 
 # Database class
@@ -66,10 +65,10 @@ class Database(object):
 		else:
 			isfile = os.path.isfile(self.dbpath)
 			if not isfile and self.update_database == True:
-				logging.error(
+				print (
 					f'The file {self.dbpath} was not found.'
 				)
-				logging.error(
+				print (
 					'Please try again with the correct file.'
 				)
 
@@ -79,7 +78,6 @@ class Database(object):
 				dbfile = self.dbpath
 
 		return dbfile
-
 
 	def _connect_db(self):
 		'''

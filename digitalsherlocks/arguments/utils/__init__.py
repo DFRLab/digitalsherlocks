@@ -9,6 +9,10 @@
 # File: Arguments utils.
 # =========================================
 
+# import modules
+import os
+import time
+
 '''
 
 Functions:
@@ -17,10 +21,6 @@ Functions:
 	- set_working_directory
 	- generate_wd
 '''
-
-# import modules
-import os
-import time
 
 
 # Align text

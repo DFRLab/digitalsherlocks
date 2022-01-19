@@ -13,8 +13,6 @@
 # import modules
 import sys
 import time
-import logging
-
 
 from APITwitter.client import TwitterAuthentication
 from twitter import TwitterHTTPError, TwitterError
@@ -22,11 +20,14 @@ from urllib.error import HTTPError
 
 # import twitter utils
 from APITwitter.utils import (
-	clean_twitter_arguments, get_max_id
+	clean_twitter_arguments, get_max_id, aligntext
 )
 
 # import database
 from APITwitter.database import Database
+
+# import log utils
+from logs import log_time_fmt
 
 '''
 
@@ -38,7 +39,7 @@ from APITwitter.storage import insert_data
 
 
 # API class
-class API(object):
+class ApiTwitter(object):
 	'''
 	'''
 
@@ -50,12 +51,14 @@ class API(object):
 		self.kwargs = kwargs
 
 		# Twitter API user connection
-		logging.info('Twitter user authentication.')
+		print (f'{log_time_fmt()} - Twitter user authentication')
 		self.TwitterAuth = TwitterAuthentication()
 		self.TwitterAPI = self.TwitterAuth.connect()
+		print (f'{log_time_fmt()} - Authentication completed')
 
 		# Get working directory
 		self.wd = self.kwargs['wd']
+		print (f'{log_time_fmt()} - Working directory: {self.wd}')
 
 		# Requested attrs
 		self.timezone = self.kwargs['timezone']
@@ -148,8 +151,8 @@ class API(object):
 			sleep_for = int(reset - time.time()) + 10
 
 			# Log action
-			logging.warning('Application reached rate limits.')
-			logging.info(
+			print ('Application reached rate limits.')
+			print (
 				f'Sleeping application for {sleep_for} secs...'
 			)
 
@@ -157,7 +160,7 @@ class API(object):
 			time.sleep(sleep_for)
 
 			# Awake
-			logging.info('Awake.')
+			print ('Awake.')
 
 	'''
 
@@ -190,14 +193,16 @@ class API(object):
 
 		'''
 
-		LOGS
+		Log requested user
 		'''
 		try:
 			u = self.kwargs['screen_name']
 		except KeyError:
 			u = self.kwargs['user_id']
 
-		logging.info(f'Downloading timeline from user {u}')
+		print (
+			f'{log_time_fmt()} - Downloading timeline from user {u}'
+		)
 
 		'''
 
@@ -212,8 +217,8 @@ class API(object):
 
 		Endpoint: user_timeline
 		'''
+		self.data = []
 		while True:
-			self.data = []
 			try:
 				statuses = self.TwitterAPI.statuses.user_timeline(
 					**self.kwargs
@@ -227,9 +232,10 @@ class API(object):
 					# Download up to 3,200 user tweets
 					while len(statuses) > 0:
 						self.kwargs['max_id'] = max_id
-						statuses = self.TwitterAPI.statuses.user_timeline(
-							**self.kwargs
-						)
+						statuses = \
+							self.TwitterAPI.statuses.user_timeline(
+								**self.kwargs
+							)
 
 						if len(statuses) > 0:
 							self.data.extend(statuses)
@@ -243,9 +249,12 @@ class API(object):
 				if error == 'TwitterError':
 
 					# Retry < API request failed >
-					if 'Incomplete JSON data collected' in e_value:
-						logging.error(
-							'Twitter Error connection. Retrying...'
+					if 'Incomplete JSON data' in str(e_value):
+						print (
+							aligntext(
+								f'{log_time_fmt()} - TwitterError. \
+								Connection error. Retrying...'
+							)
 						)
 					
 						# Sleep
@@ -253,8 +262,8 @@ class API(object):
 						continue
 
 		# Insert data to database
-		logging.info('Inserting data into database')
-		self._insert_data()
+		print (f'{log_time_fmt()} - Inserting data into database')
+		# self._insert_data()
 
 		return self.data
 

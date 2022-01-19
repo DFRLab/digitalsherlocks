@@ -28,11 +28,14 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import requests
 import webbrowser
 
+# import from modules < authentication >
 from APITwitter.config.key import key
 from twitter import OAuth, Twitter
 from cryptography.fernet import Fernet
 from requests_oauthlib import OAuth1, OAuth1Session
 
+# import log utils
+from logs import log_time_fmt
 
 # HTTP Handler - Render HTML file
 class HTTPHandler(BaseHTTPRequestHandler):
@@ -266,14 +269,13 @@ class TwitterAuthentication(object):
 		webbrowser.open(authorization_url)
 
 		# Get verifier
-		self.verifier = input('Please, add PIN: ').strip()
+		print (f'{log_time_fmt()} - Input required')
+		self.verifier = input(
+			f'{log_time_fmt()} - Please, copy and add PIN: '
+		).strip()
 
 		# Stop Localhost server
 		self.SERVER_SESSION.stop()
-
-		# Log
-		print ('Authentication completed')
-		print ('')
 
 		# Get access tokens
 		params = {

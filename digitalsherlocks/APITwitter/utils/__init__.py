@@ -19,9 +19,11 @@ Functions:
 
 - clean_twitter_arguments
 - get_max_id
+- aligntext
 
 '''
 
+# Clean Twitter arguments. Keep endpoint arguments only
 def clean_twitter_arguments(args):
 	'''
 
@@ -49,6 +51,7 @@ def clean_twitter_arguments(args):
 		k:v for k, v in args.items() if k not in l and v != None
 	}
 
+# Get max id from data
 def get_max_id(statuses):
 	'''
 
@@ -61,3 +64,10 @@ def get_max_id(statuses):
 	return min([i['id'] for i in statuses]) - 1
 
 
+# Align text
+def aligntext(text):
+	'''
+
+	Removes newlines and extra spaces in text
+	'''
+	return ' '.join(text.split()).strip()

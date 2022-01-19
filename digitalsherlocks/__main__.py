@@ -23,12 +23,11 @@ message = '''
     Digitalsherlocks
 '''
 print (font.renderText(message))
-print ('')
 print ('''
-        =============================================================
-        =============================================================
+              ===================================================
 ''')
 print ('')
+
 
 '''
 
@@ -36,20 +35,20 @@ Import modules
 '''
 import sys
 import shutil
-import logging
 
 # import from modules
 from argparse import (
     ArgumentParser, RawTextHelpFormatter
 )
 
+from logs import (
+    log_time_fmt
+)
+
 from arguments import ProcessArguments
 from arguments.utils import (
     aligntext
 )
-
-# Twitter
-from APITwitter import API
 
 # main function
 def main():
@@ -58,15 +57,8 @@ def main():
     main function
     '''
 
-    # logging config
-    logging.basicConfig(
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S',
-        level=logging.DEBUG
-    )
-
-    logging.info('Welcome')
-    logging.info('Started')
+    print (f'{log_time_fmt()} - Welcome')
+    print (f'{log_time_fmt()} - Program started')
     
     # creating argument parser
     parser = ArgumentParser(
@@ -346,36 +338,17 @@ def main():
     Get arguments
     '''
     args = vars(parser.parse_args())
+    print (f'{log_time_fmt()} - Collecting arguments')
     
     '''
 
     Process arguments
-
-    if not arguments:
-        Trigger -> collect parameters from user
     '''
-    logging.info('Collecting arguments')
+    kwarg_handler = ProcessArguments(args)
     
-    kwargs = ProcessArguments(args)
-    args = kwargs._get_arguments()
-    
-    logging.info('Arguments ready')
-
-
-    '''
-
-    Connecting to service
-    '''
-    logging.info('Connecting to service')
-
-
-
-
-    # TEST
-    test_api_twitter = API(**args)
-
-    # users
-    test_data = test_api_twitter.user_timeline()
+    # get data
+    d = kwarg_handler.connect_service()
+    print (f'{log_time_fmt()} - {len(d)} tweets downloaded')
 
 
 # execute

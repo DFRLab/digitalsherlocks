@@ -8,7 +8,9 @@ import json
 import pandas as pd
 
 # import local modules
-from utils import image_url_data, clean_text, convert_to_int, timestamp_attrs
+from utils import (
+    image_url_data, clean_text, convert_to_int, timestamp_attrs
+)
 
 # import database keys
 from APITwitter.assets import database_tweet_keys, order_columns_to_sql

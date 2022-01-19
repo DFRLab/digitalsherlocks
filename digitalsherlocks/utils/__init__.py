@@ -1,28 +1,203 @@
 # -*- coding: utf-8 -*-
 
-''' This file compiles a set of functions
-Collects parameters from user
-Loads Twitter API credentials and connects to API
-Creates a .db file using sqlite3
-Collects and process attrs from Twitter data
-Builds and saves a network-like dataset
-'''
+# =========================================
+# digitalsherlocks
+# A DFRLab project
+#
+# Author: @estebanpdl
+#
+# File: Utils.
+# =========================================
 
 # import modules
-from w3lib.html import replace_entities
-from bs4 import BeautifulSoup as bs
-from twitter import *
 import pandas as pd
 import sqlite3
 import time
 import re
 import os
 
-# Exceptions
+# import from modules
 from pytz.exceptions import UnknownTimeZoneError
+from w3lib.html import replace_entities
+from bs4 import BeautifulSoup as bs
+from twitter import *
 
 # local modules
 from APITwitter.assets import stopwords
+
+'''
+
+Functions
+
+-
+
+'''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+''' 
+
+TEMP
+
+'''
 
 # new line
 def nl():
