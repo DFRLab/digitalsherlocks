@@ -35,7 +35,9 @@ from cryptography.fernet import Fernet
 from requests_oauthlib import OAuth1, OAuth1Session
 
 # import log utils
-from logs import printl
+from logs import (
+	printl
+)
 
 # HTTP Handler - Render HTML file
 class HTTPHandler(BaseHTTPRequestHandler):

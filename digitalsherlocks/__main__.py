@@ -350,6 +350,7 @@ def main():
     '''
     kwarg_handler = ProcessArguments(args)
     
+    
     # get data
     d = kwarg_handler.connect_service()
     printl(f'{len(d)} tweets downloaded', color='GREEN')

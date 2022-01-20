@@ -69,3 +69,7 @@ def printl(text, style='BRIGHT', color='WHITE'):
     print (
         st + fore + f'{log_time_fmt()} - {text}'
     )
+
+    # Defauls
+    Style.BRIGHT
+    Fore.WHITE
