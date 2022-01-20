@@ -272,9 +272,11 @@ class TwitterAuthentication(object):
 
 		# Get verifier
 		printl('Input required', color='BLUE')
-		self.verifier = input(
-			f'{log_time_fmt()} - Please, copy and add PIN: '
-		).strip()
+		self.verifier = printl(
+			'Please, copy and add PIN: ',
+			color='WHITE',
+			inp=True
+		)
 
 		# Stop Localhost server
 		self.SERVER_SESSION.stop()

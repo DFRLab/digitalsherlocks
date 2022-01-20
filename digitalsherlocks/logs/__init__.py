@@ -36,7 +36,7 @@ def log_time_fmt():
     return time.strftime(fmt)
 
 # log text
-def printl(text, style='BRIGHT', color='WHITE'):
+def printl(text, style='BRIGHT', color='WHITE', inp=False):
     '''
 
     prints logs
@@ -66,10 +66,9 @@ def printl(text, style='BRIGHT', color='WHITE'):
     st = s[style]
     fore = c[color]
 
-    print (
-        st + fore + f'{log_time_fmt()} - {text}'
-    )
+    output = st + fore + f'{log_time_fmt()} - {text}'
 
-    # Defauls
-    Style.BRIGHT
-    Fore.WHITE
+    if not inp:
+        print (output)
+    else:
+        input(f'{output}').strip()
