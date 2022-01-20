@@ -16,17 +16,23 @@ CLI main file
 
 '''
 
+# Import logs modules
+from colorama import Style, Fore
+from colorama import init as COLORAMA_INIT
+COLORAMA_INIT()
+
 # welcome Message
 from pyfiglet import Figlet
 font = Figlet(font='big')
 message = '''
-    Digitalsherlocks
+    digitalsherlocks
 '''
-print (font.renderText(message))
+print (Style.BRIGHT + font.renderText(message))
 print ('''
               ===================================================
 ''')
 print ('')
+print (Fore.RESET)
 
 
 '''
@@ -37,12 +43,9 @@ import sys
 import shutil
 
 # import from modules
+from logs import printl
 from argparse import (
     ArgumentParser, RawTextHelpFormatter
-)
-
-from logs import (
-    log_time_fmt
 )
 
 from arguments import ProcessArguments
@@ -56,9 +59,6 @@ def main():
 
     main function
     '''
-
-    print (f'{log_time_fmt()} - Welcome')
-    print (f'{log_time_fmt()} - Program started')
     
     # creating argument parser
     parser = ArgumentParser(
@@ -338,7 +338,11 @@ def main():
     Get arguments
     '''
     args = vars(parser.parse_args())
-    print (f'{log_time_fmt()} - Collecting arguments')
+
+    # Logs
+    printl('Welcome', color='GREEN')
+    printl('Program started')
+    printl('Collecting arguments')
     
     '''
 
@@ -348,7 +352,7 @@ def main():
     
     # get data
     d = kwarg_handler.connect_service()
-    print (f'{log_time_fmt()} - {len(d)} tweets downloaded')
+    printl(f'{len(d)} tweets downloaded', color='GREEN')
 
 
 # execute

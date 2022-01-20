@@ -10,12 +10,13 @@
 # =========================================
 
 # import modules
+import os
 import sys
 
 # import from modules
-from logs import log_time_fmt
+from logs import printl
 from arguments.utils import (
-	generate_wd, aligntext
+	generate_wd
 )
 
 # import APIs
@@ -33,14 +34,14 @@ class ProcessArguments(object):
 		if not args:
 
 			print ('')
-			print (f'{log_time_fmt()} - < ERROR >')
-			print (f'{log_time_fmt()} - > No arguments were added')
-			print (f'{log_time_fmt()} - > Check help parameter')
-			print (f'{log_time_fmt()} - $ digitalsherlocks cli -h')
+			printl('< ERROR >', color='RED')
+			printl('> No arguments were added', color='RED')
+			printl('> Check help parameter', color='RED')
+			printl('$ digitalsherlocks cli -h', color='GREEN')
 
 			# Future
 			'''
-			print (f'{log_time_fmt()} - User guided commands')
+			printl('User guided commands', color='BLUE')
 
 			args = CollectArguments()
 			args = args._generate_args()
@@ -55,6 +56,12 @@ class ProcessArguments(object):
 		# Collect arguments
 		self.args = args
 		
+	def _get_wd(self):
+		'''
+		'''
+		wd = os.path.abspath(self.args['wd'])
+		return wd.replace(os.sep, '/')
+
 	def _get_arguments(self):
 		'''
 
@@ -74,7 +81,14 @@ class ProcessArguments(object):
 			'''
 			self.args['wd'] = generate_wd(self.args['wd'])
 
-		print (f'{log_time_fmt()} - Arguments ready')
+		printl('Arguments ready')
+
+		'''
+		Working directory
+		'''
+		wd = self._get_wd()
+		printl(f'Working directory: {wd}', color='GREEN')
+
 		return self.args
 
 	def connect_service(self):
@@ -82,16 +96,11 @@ class ProcessArguments(object):
 		'''
 		# Get arguments
 		kwargs = self._get_arguments()
-		print (f'{log_time_fmt()} - Connecting to service')
+		printl('Connecting to service')
 
 		# Service
 		service = kwargs['service']
-		print (
-			aligntext(
-				f'{log_time_fmt()} - {service.capitalize()} service \
-				connected'
-			)
-		)
+		printl(f'{service.capitalize()} service connected')
 
 		'''
 		

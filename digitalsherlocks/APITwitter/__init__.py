@@ -20,14 +20,14 @@ from urllib.error import HTTPError
 
 # import twitter utils
 from APITwitter.utils import (
-	clean_twitter_arguments, get_max_id, aligntext
+	clean_twitter_arguments, get_max_id
 )
 
 # import database
 from APITwitter.database import Database
 
 # import log utils
-from logs import log_time_fmt
+from logs import printl
 
 '''
 
@@ -51,14 +51,13 @@ class ApiTwitter(object):
 		self.kwargs = kwargs
 
 		# Twitter API user connection
-		print (f'{log_time_fmt()} - Twitter user authentication')
+		printl('Twitter user authentication')
 		self.TwitterAuth = TwitterAuthentication()
 		self.TwitterAPI = self.TwitterAuth.connect()
-		print (f'{log_time_fmt()} - Authentication completed')
+		printl('Authentication completed', color='BLUE')
 
 		# Get working directory
 		self.wd = self.kwargs['wd']
-		print (f'{log_time_fmt()} - Working directory: {self.wd}')
 
 		# Requested attrs
 		self.timezone = self.kwargs['timezone']
@@ -76,7 +75,7 @@ class ApiTwitter(object):
 		self.endpoint = self.kwargs['endpoint']
 
 		# Collected data
-		self.data = None
+		self.data = []
 
 	def _get_db_conn(self):
 		'''
@@ -151,8 +150,11 @@ class ApiTwitter(object):
 			sleep_for = int(reset - time.time()) + 10
 
 			# Log action
-			print ('Application reached rate limits.')
-			print (
+			printl(
+				'Application reached rate limits.',
+				color='YELLOW'
+			)
+			printl(
 				f'Sleeping application for {sleep_for} secs...'
 			)
 
@@ -160,7 +162,7 @@ class ApiTwitter(object):
 			time.sleep(sleep_for)
 
 			# Awake
-			print ('Awake.')
+			printl('Awake', color='GREEN')
 
 	'''
 
@@ -200,9 +202,7 @@ class ApiTwitter(object):
 		except KeyError:
 			u = self.kwargs['user_id']
 
-		print (
-			f'{log_time_fmt()} - Downloading timeline from user {u}'
-		)
+		printl(f'Downloading timeline from user {u}')
 
 		'''
 
@@ -217,7 +217,8 @@ class ApiTwitter(object):
 
 		Endpoint: user_timeline
 		'''
-		self.data = []
+		partial_data = False
+		MAX_RETRIES = 5
 		while True:
 			try:
 				statuses = self.TwitterAPI.statuses.user_timeline(
@@ -248,23 +249,78 @@ class ApiTwitter(object):
 				e_type, e_value, e_traceback = sys.exc_info()
 				if error == 'TwitterError':
 
+
+
 					# Retry < API request failed >
 					if 'Incomplete JSON data' in str(e_value):
-						print (
-							aligntext(
-								f'{log_time_fmt()} - TwitterError. \
-								Connection error. Retrying...'
-							)
+						print ('')
+						printl(
+							'TwitterError. Connection error',
+							color='RED'
 						)
-					
-						# Sleep
-						time.sleep(15)
-						continue
 
+
+						'''
+
+						SELF KWARGS
+
+							->> GET DOWNLOADED DATA
+						'''
+
+
+						# Decrease MAX RETRIES
+						MAX_RETRIES -= 1
+
+						# Retrying
+						if MAX_RETRIES > 0:
+							printl('Retrying...')
+							printl(
+								f'Max Retries: 5. LEFT {MAX_RETRIES}'
+							)
+
+							# Sleep
+							time.sleep(15)
+
+							# Update data
+							if self.data:
+								self.kwargs['max_id'] = get_max_id(
+									self.data
+								)
+							
+							continue
+						else:
+							if self.data:
+								partial_data = True
+								break
+							else:
+								'''
+
+								Quit program
+								'''
+								print ('')
+								printl(
+									'API Error. Try again.',
+									color='RED'
+								)
+
+								sys.exit()
+
+		
+
+		# Partial data only
+		if partial_data:
+			print ('')
+			printl('API returned partial data')
+			printl(
+				f'Tweets collected: {len(self.data)}',
+				color='BLUE'
+			)
+			
 		# Insert data to database
-		print (f'{log_time_fmt()} - Inserting data into database')
-		# self._insert_data()
+		printl('Inserting data into database')
+		self._insert_data()
 
+		
 		return self.data
 
 

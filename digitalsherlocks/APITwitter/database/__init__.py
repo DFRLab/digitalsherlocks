@@ -15,6 +15,9 @@ import sys
 import sqlite3
 import requests
 
+# import log utils
+from logs import printl
+
 # Database class
 class Database(object):
 	'''
@@ -65,11 +68,14 @@ class Database(object):
 		else:
 			isfile = os.path.isfile(self.dbpath)
 			if not isfile and self.update_database == True:
-				print (
-					f'The file {self.dbpath} was not found.'
+				print ('')
+				printl(
+					f'The file {self.dbpath} was not found.',
+					color='RED'
 				)
 				print (
-					'Please try again with the correct file.'
+					'Please try again with the correct file.',
+					color='RED'
 				)
 
 				# Quit program

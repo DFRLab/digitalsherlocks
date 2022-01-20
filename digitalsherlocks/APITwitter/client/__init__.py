@@ -35,7 +35,7 @@ from cryptography.fernet import Fernet
 from requests_oauthlib import OAuth1, OAuth1Session
 
 # import log utils
-from logs import log_time_fmt
+from logs import printl
 
 # HTTP Handler - Render HTML file
 class HTTPHandler(BaseHTTPRequestHandler):
@@ -249,7 +249,7 @@ class TwitterAuthentication(object):
 		)
 
 		# Config file
-		config_file = f'{config_folder}/api.ini'
+		config_file = f'{config_folder}/apitwitter.ini'
 		with open(config_file, mode='w', encoding='utf-8') as f:
 			config.write(f)
 
@@ -269,7 +269,7 @@ class TwitterAuthentication(object):
 		webbrowser.open(authorization_url)
 
 		# Get verifier
-		print (f'{log_time_fmt()} - Input required')
+		printl('Input required', color='BLUE')
 		self.verifier = input(
 			f'{log_time_fmt()} - Please, copy and add PIN: '
 		).strip()
@@ -302,7 +302,7 @@ class TwitterAuthentication(object):
 		config_folder = os.path.join(
 			os.path.expanduser('~'), '.config', self.app
 		)
-		config_file = f'{config_folder}/api.ini'
+		config_file = f'{config_folder}/apitwitter.ini'
 		if os.path.isfile(config_file):
 			'''
 
