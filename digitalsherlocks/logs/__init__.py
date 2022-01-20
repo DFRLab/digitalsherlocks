@@ -71,4 +71,4 @@ def printl(text, style='BRIGHT', color='WHITE', inp=False):
     if not inp:
         print (output)
     else:
-        input(f'{output}').strip()
+        return input(f'{output}').strip()
