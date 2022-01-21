@@ -35,6 +35,7 @@ import storage <tmp code>
 TODO: Storage class.
 '''
 from APITwitter.storage import insert_data
+from APITwitter.store_user_connections import insert_users_data
 
 
 # API class
@@ -170,7 +171,8 @@ class ApiTwitter(object):
 			'/followers/ids': 'followers',
 			'/followers/list': 'followers',
 			'/friends/ids': 'friends',
-			'/friends/list': 'friends'
+			'/friends/list': 'friends',
+			'/users/lookup': 'users'
 		}
 
 		return src[endpoint_status]
@@ -197,7 +199,7 @@ class ApiTwitter(object):
 		Sleeps application if rate limit status is low
 		'''
 		remaining, reset = self._rate_limit_status(endpoint_status)
-		if remaining <= 10:
+		if remaining <= 1:
 			sleep_for = int(reset - time.time()) + 10
 
 			# Log action
@@ -236,6 +238,9 @@ class ApiTwitter(object):
 		'''
 		# Clean Twitter arguments
 		self.kwargs = clean_twitter_arguments(self.kwargs)
+
+		# Adding tweet mode
+		self.kwargs['tweet_mode'] = 'extended'
 
 		'''
 
@@ -284,7 +289,7 @@ class ApiTwitter(object):
 							self.data.extend(statuses)
 							max_id = get_max_id(statuses)
 
-					break
+				break
 
 			except (TwitterHTTPError, HTTPError, TwitterError) as e:
 				
@@ -341,9 +346,6 @@ class ApiTwitter(object):
 					self._sleep_application(endpoint_status)
 
 					continue
-
-		
-
 		
 		# Partial data only
 		if self.partial_data:
@@ -357,7 +359,7 @@ class ApiTwitter(object):
 		printl('Inserting data into database')
 		self._insert_data()
 		
-		return self.data
+		return
 	
 	def search_tweets(self):
 		'''
@@ -378,6 +380,9 @@ class ApiTwitter(object):
 		'''
 		# Clean Twitter arguments
 		self.kwargs = clean_twitter_arguments(self.kwargs)
+
+		# Adding tweet mode
+		self.kwargs['tweet_mode'] = 'extended'
 
 		'''
 
@@ -404,10 +409,18 @@ class ApiTwitter(object):
 				statuses = self.TwitterAPI.search.tweets(
 					**self.kwargs
 				)
-				statuses = statuses['statuses']
-				if len(statuses) > 0:
-					self.data.extend(statuses)
-					max_id = get_max_id(statuses)
+				self.data = statuses['statuses']
+				if len(self.data) > 0:
+
+					'''
+
+					Insert data
+					'''
+					self._insert_data()
+
+
+					# Get max id
+					max_id = get_max_id(self.data)
 
 					# Download more data
 					while len(statuses) > 0:
@@ -417,16 +430,175 @@ class ApiTwitter(object):
 						)
 
 						#  Get statuses
-						statuses = statuses['statuses']
-						if len(statuses) > 0:
-							max_id = get_max_id(statuses)
-							self.data.extend(statuses)
+						self.data = statuses['statuses']
+						if len(self.data) > 0:
+							max_id = get_max_id(self.data)
+							
+							'''
 
-					break
+							Insert data
+							'''
+							self._insert_data()
+
+				break
 			
 			except (TwitterHTTPError, HTTPError, TwitterError) as e:
 				
 
+
+				error = e.__class__.__name__
+				e_type, e_value, e_traceback = sys.exc_info()
+
+				if error == 'TwitterError':
+
+					# Retry < API request failed >
+					if 'Incomplete JSON data' in str(e_value):
+						printl(
+							'TwitterError. Connection error',
+							color='RED'
+						)
+
+						# Decrease MAX RETRIES
+						self.max_retries -= 1
+
+						# Retry
+						retry_status = self._connection_retry(
+							self.max_retries
+						)
+
+						if retry_status:
+							continue
+						else:
+							if self.data:
+
+								self.partial_data = True
+								break
+							
+							else:
+								'''
+								Quit program
+								'''
+								printl(
+									'API Twitter Error',
+									color='RED'
+								)
+								printl(
+									'Ending program. Try again',
+									color='RED'
+								)
+
+								sys.exit()
+
+				if error == 'TwitterHTTPError':
+					exceed_api_limit = True
+
+					# sleep application
+					self._sleep_application(endpoint_status)
+
+					continue
+		
+		return
+
+	def _save_friendship_ids(self, data):
+		'''
+		'''
+		sql = '''
+		INSERT INTO ids(
+			"id_str"
+		) VALUES(
+			?
+		)
+		'''
+
+		# Insert data
+		self.db_cursor.executemany(sql, data)
+		self.db_connection.commit()
+
+
+	def friendships(self):
+		'''
+
+		Returns followers and friends of one arbitrary user.
+
+		kwargs:
+			- (screen_name | user_id)
+			- cursor
+			- count
+		'''
+		# Get type of friendship
+		reference = self.kwargs['friendship_type']
+
+		# Clean Twitter arguments
+		self.kwargs = clean_twitter_arguments(self.kwargs)
+
+		# Adding parameter
+		self.kwargs['stringify_ids'] = True
+
+		'''
+
+		Friendship requested
+		'''
+		try:
+			u = self.kwargs['screen_name']
+		except KeyError:
+			u = self.kwargs['user_id']
+
+		printl(f'Downloading {reference} from {u}')
+
+		'''
+
+		Check rate limits
+		'''
+		endpoint_status = f'/{reference}/ids'
+		self._sleep_application(endpoint_status)
+
+
+		'''
+
+		TODO: improve connection
+		'''
+		while True:
+			try:
+				if reference == 'followers':
+					users = self.TwitterAPI.followers.ids(
+						**self.kwargs
+					)
+				else:
+					users = self.TwitterAPI.friends.ids(
+						**self.kwargs
+					)
+
+				# Inserting batch of data
+				self.data = [tuple([i]) for i in users['ids']]
+				self._save_friendship_ids(self.data)
+
+				# Get cursor
+				api_cursor = users['next_cursor']
+				while api_cursor != 0:
+					self.kwargs['cursor'] = api_cursor
+					if reference == 'followers':
+						users = self.TwitterAPI.followers.ids(
+							**self.kwargs
+						)
+					else:
+						users = self.TwitterAPI.friends.ids(
+							**self.kwargs
+						)
+
+					'''
+
+					Get users data
+					'''
+					self.data = [tuple([i]) for i in users['ids']]
+					if self.data:
+						self._save_friendship_ids(self.data)
+
+						# Get next cursor
+						api_cursor = users['next_cursor']
+
+				break
+
+			except (TwitterHTTPError, HTTPError, TwitterError) as e:
 
 
 				error = e.__class__.__name__
@@ -475,58 +647,94 @@ class ApiTwitter(object):
 
 					# sleep application
 					self._sleep_application(endpoint_status)
-
+					
 					continue
 
-		# Partial data only
-		if self.partial_data:
-			printl('After twitter errors, API returned partial data')
-			printl(
-				f'Tweets collected: {len(self.data)}',
-				color='BLUE'
-			)
 
-		# Insert data to database
-		printl('Inserting data into database')
-		self._insert_data()
+		'''
 		
-		return self.data
+		Pull users' data
 
-	def friendships(self):
+		-> hydrate users
 		'''
-
-		Returns followers and friends of one arbitrary user.
-
-		kwargs:
-			- (screen_name | user_id)
-			- cursor
-			- count
+		sql = '''
+		SELECT *
+		FROM ids
 		'''
-		# Add parameter
-		self.kwargs['stringify_ids'] = True
+		self.db_cursor.execute(sql)
 
-		# Get type of friendship
-		# reference = self.kwargs['friendship_type']
+		# Get data
+		self.data = [j for i in self.db_cursor.fetchall() for j in i]
+		batch = 100
+		ids = [
+			self.data[i: i + batch] for i in range(
+				0, len(self.data), batch
+			)
+		]
 
 		'''
 
 		Check rate limits
 		'''
-		# endpoint_status = f'/{reference}/ids'
-		# self._sleep_application(endpoint_status)
+		endpoint_status = f'/users/lookup'
+		self._sleep_application(endpoint_status)
 
-		'''
+		for accounts in ids:
+			sleep_for = 15
+			while True:
+				try:
+					self.data = self.TwitterAPI.users.lookup(
+						user_id=','.join(accounts)
+					)
 
-		TODO: improve connection
-		'''
-		# if reference == 'followers':
-		# 	users = self.TwitterAPI.followers.ids(**self.kwargs)
-		# else:
-		# 	users = self.TwitterAPI.friends.ids(**self.kwargs)
+					if self.data:
+						'''
 
-		# '''
+						Insert data
+						'''
+						insert_users_data(
+							self.db_connection,
+							self.db_cursor,
+							self.data
+						)
 
-		# Save ids in sql table
-		# '''
+					break
+				except (TwitterHTTPError, HTTPError, TwitterError) as e:
 
-		return True
+
+					error = e.__class__.__name__
+					e_type, e_value, e_traceback = sys.exc_info()
+
+					if error == 'TwitterError':
+
+						# Retry < API request failed >
+						if 'Incomplete JSON data' in str(e_value):
+							printl(
+								'TwitterError. Connection error',
+								color='RED'
+							)
+
+							# Decrease MAX RETRIES
+							self.max_retries -= 1
+							if self.max_retries > 0:
+								printl('Retrying...')
+								printl(
+									f'Max Retries: 10. LEFT {self.max_retries}'
+								)
+
+								# Sleep
+								time.sleep(sleep_for)
+
+								# Increasing sleep value
+								sleep_for += sleep_for
+							
+
+					if error == 'TwitterHTTPError':
+						exceed_api_limit = True
+
+						# sleep application
+						self._sleep_application(endpoint_status)
+						
+						continue
+
+		return 

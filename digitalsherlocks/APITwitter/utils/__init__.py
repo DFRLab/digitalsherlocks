@@ -39,12 +39,8 @@ def clean_twitter_arguments(args):
 	# local arguments
 	l = [
 		'wd', 'service', 'update_database', 'dbpath', 'dbname',
-		'endpoint', 'timezone'
+		'endpoint', 'max_retries', 'timezone', 'friendship_type'
 	]
-
-	# adding API keys
-	args['tweet_mode'] = 'extended'
-	args['count'] = 200
 
 	# filter keys
 	return {
