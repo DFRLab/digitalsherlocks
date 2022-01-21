@@ -112,4 +112,7 @@ class ProcessArguments(object):
 		api_twitter = ApiTwitter(**kwargs)
 
 		# users
-		return api_twitter.user_timeline()
+		# return api_twitter.user_timeline()
+
+		# tweets
+		return api_twitter.friendships()

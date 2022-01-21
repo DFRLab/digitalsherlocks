@@ -153,8 +153,11 @@ def main():
         Update an existing database
           $ digitalsherlocks cli twitter --update-database --db-path path/to/my/file.db
 
-        Shows help message for Twitter API users' endpoint
+        Shows help message for Twitter user-timeline endpoint
           $ digitalsherlocks cli twitter users -h
+
+        Shows help message for Twitter search tweets endpoint
+          $ digitalsherlocks cli twitter tweets -h
         '''.lstrip()
     )
 
@@ -199,6 +202,20 @@ def main():
         dest='dbname'
     )
 
+    
+    '''
+
+    API Max retries
+    '''
+    twitter.add_argument(
+        '--max-retries',
+        type=int,
+        help='Number of times to retry API connection. Default 10.',
+        default=10,
+        metavar='RETRIES',
+        dest='max_retries'
+    )
+
 
     '''
 
@@ -215,15 +232,16 @@ def main():
     '''
 
     Twitter: users
+    Get user timeline data
     '''
     twitter_users = twitter_subparsers.add_parser(
         'users',
         formatter_class=indent_formatter,
         description='''
-        Uses Twitter users-related endpoints
-        ====================================
+        Returns a collection of Tweets posted by the user
+        =================================================
         ''',
-        help='Uses Twitter users-related endpoints.',
+        help='Returns a collection of Tweets posted by the user.',
         epilog='''
 
         Examples:
@@ -242,15 +260,69 @@ def main():
         '''.lstrip()
     )
 
+    
+    '''
+
+    Twitter: tweets
+    Collect data by searching tweets matching a query
+    '''
+
+    twitter_tweets = twitter_subparsers.add_parser(
+        'tweets',
+        formatter_class=indent_formatter,
+        description='''
+        Returns a collection of Tweets
+        ==============================
+        ''',
+        help='Returns a collection of Tweets matching a query.',
+        epilog='''
+
+        '''.lstrip()
+    )
+
+    
+    '''
+
+    Twitter: friendships
+    Get followers and friends of one arbitrary user
+    '''
+    twitter_friendships = twitter_subparsers.add_parser(
+        'friendships',
+        formatter_class=indent_formatter,
+        description='''
+        Get followers and friends of one arbitrary user
+        ===============================================
+        ''',
+        help='Returns followers and friends of one arbitrary user.',
+        epilog='''
+        '''.lstrip()
+    )
+
+    
+    '''
+
+    Twitter argument groups
+    '''
+
     twitter_user_args = twitter_users.add_argument_group(
-        'Twitter API users options',
+        'User timelines options',
+        description=''
+    )
+
+    twitter_tweets_args = twitter_tweets.add_argument_group(
+        'Search tweets options',
+        description=''
+    )
+
+    twitter_friendships_args = twitter_friendships.add_argument_group(
+        'Friendships options',
         description=''
     )
 
     
     '''
 
-    Twitter: users timeline-related arguments
+    Twitter: user timelines-related arguments
     '''
 
     # user name timeline
@@ -260,7 +332,7 @@ def main():
         help=aligntext('''Returns a collection of the most recent
         Tweets posted by the user indicated by the screen_name.
         '''),
-        metavar='handlename',
+        metavar='NAME',
         dest='screen_name',
         required=not '--user-id-timeline' in sys.argv
     )
@@ -272,7 +344,7 @@ def main():
         help=aligntext('''Returns a collection of the most recent
         Tweets posted by the user indicated by the user_id.
         '''),
-        metavar='id',
+        metavar='ID',
         dest='user_id',
         required=not '--user-name-timeline' in sys.argv
     )
@@ -306,7 +378,7 @@ def main():
         help=aligntext('''Returns results with an ID greater than
         (that is, more recent than) the specified ID. Default 1.
         '''),
-        metavar='id',
+        metavar='ID',
         default='1',
         dest='since_id'
     )
@@ -318,8 +390,20 @@ def main():
         help=aligntext('''Returns results with an ID less than
         (that is, older than) or equal to the specified ID.
         '''),
-        metavar='id',
+        metavar='ID',
         dest='max_id'
+    )
+
+    # count < number of tweets per request >
+    twitter_user_args.add_argument(
+        '--count',
+        type=int,
+        help=aligntext('''Number of tweets to return per request.
+        Max 200. Default 200.
+        '''),
+        metavar='NUMBER',
+        default=200,
+        dest='count'
     )
 
     # timezone
@@ -327,9 +411,169 @@ def main():
         '-tz',
         '--timezone',
         type=str,
-        help='Converts UTC data from posts into specified timezone',
-        metavar='tz',
+        help='Converts UTC data from posts into specified timezone.',
+        metavar='TIMEZONE',
         dest='timezone'
+    )
+
+
+    '''
+
+    Twitter: search tweets-related arguments
+    '''
+
+    # query
+    twitter_tweets_args.add_argument(
+        '-q',
+        '--query',
+        type=str,
+        help=aligntext('''A search query of 500 characters maximum,
+        including operators.
+        '''),
+        metavar='QUERY',
+        dest='q',
+        required=True
+    )
+
+    # language
+    twitter_tweets_args.add_argument(
+        '-l',
+        '--language',
+        type=str,
+        help=aligntext('''Restricts tweets to the given language,
+        given by an ISO 639-1 code.
+        '''),
+        metavar='LANGUAGE',
+        dest='lang'
+    )
+
+    # result type
+    twitter_tweets_args.add_argument(
+        '--result-type',
+        type=str,
+        choices=['popular', 'mixed', 'recent'],
+        help=aligntext('''Specifies what type of search results you
+        would prefer to receive. Options: mixed, popular, recent.
+        Default mixed.
+        '''),
+        metavar='TYPE',
+        default='mixed',
+        dest='result_type'
+    )
+
+    # count < number of tweets per request >
+    twitter_tweets_args.add_argument(
+        '--count',
+        type=int,
+        help=aligntext('''Number of tweets to return per request.
+        Max 100. Default 100.
+        '''),
+        metavar='NUMBER',
+        default=100,
+        dest='count'
+    )
+
+    # until
+    twitter_tweets_args.add_argument(
+        '--until',
+        type=str,
+        help=aligntext('''Returns tweets created before the given
+        date. Date should be formatted as YYYY-MM-DD. Keep in mind
+        that the search index has a 7-day limit and returned data
+        is UTC.
+        '''),
+        metavar='DATE',
+        dest='until'
+    )
+
+    # since id
+    twitter_tweets_args.add_argument(
+        '--since-id',
+        type=str,
+        help=aligntext('''Returns results with an ID greater than
+        (that is, more recent than) the specified ID. Default 1.
+        '''),
+        metavar='ID',
+        default='1',
+        dest='since_id'
+    )
+
+    # max id
+    twitter_tweets_args.add_argument(
+        '--max-id',
+        type=str,
+        help=aligntext('''Returns results with an ID less than
+        (that is, older than) or equal to the specified ID.
+        '''),
+        metavar='ID',
+        dest='max_id'
+    )
+
+    # timezone
+    twitter_tweets_args.add_argument(
+        '-tz',
+        '--timezone',
+        type=str,
+        help='Converts UTC data from posts into specified timezone.',
+        metavar='TIMEZONE',
+        dest='timezone'
+    )
+
+    
+    '''
+
+    Twitter: friendships-related arguments
+    '''
+    twitter_friendships_args.add_argument(
+        '--type',
+        type=str,
+        choices=['followers', 'friends'],
+        help='Type of friendship. Options: followers, friends.',
+        dest='friendship_type',
+        required=True
+    )
+
+     # by username
+    twitter_friendships_args.add_argument(
+        '--user-name',
+        type=str,
+        help='Screen name of the user for whom to return results.',
+        metavar='NAME',
+        dest='screen_name',
+        required=not '--user-id' in sys.argv
+    )
+
+    # by userid
+    twitter_friendships_args.add_argument(
+        '--user-id',
+        type=str,
+        help='The ID of the user for whom to return results',
+        metavar='ID',
+        dest='user_id',
+        required=not '--user-name' in sys.argv
+    )
+
+    twitter_friendships_args.add_argument(
+        '--cursor',
+        type=int,
+        help=aligntext('''Causes the list of connections to be broken
+        into pages of no more than 5000 IDs at a time. Default -1
+        '''),
+        metavar='CURSOR',
+        default=-1,
+        dest='cursor'
+    )
+
+    # count < number of results to return >
+    twitter_friendships_args.add_argument(
+        '--count',
+        type=int,
+        help=aligntext('''Specifies the number of IDs attempt
+        retrieval of. Max 5,000 per distinct request. Default 5,000.
+        '''),
+        metavar='NUMBER',
+        default=5000,
+        dest='count'
     )
 
 
@@ -343,7 +587,7 @@ def main():
     printl('Welcome', color='GREEN')
     printl('Program started')
     printl('Collecting arguments')
-    
+
     '''
 
     Process arguments
@@ -353,7 +597,7 @@ def main():
     
     # get data
     d = kwarg_handler.connect_service()
-    printl(f'{len(d)} tweets downloaded', color='GREEN')
+    printl(f'{d}', color='GREEN')
 
 
 # execute

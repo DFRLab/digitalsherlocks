@@ -9,7 +9,6 @@
 # File: Twitter API requests.
 # =========================================
 
-
 # import modules
 import sys
 import time
@@ -56,34 +55,27 @@ class ApiTwitter(object):
 		self.TwitterAPI = self.TwitterAuth.connect()
 		printl('Authentication completed', color='BLUE')
 
+		# Twitter API connection - retries
+		self.max_retries = self.kwargs['max_retries']
+
 		# Get working directory
 		self.wd = self.kwargs['wd']
 
 		# Requested attrs
-		self.timezone = self.kwargs['timezone']
+		self.timezone = self.kwargs['timezone'] \
+			if 'timezone' in self.kwargs.keys() else None
 
 		# Get database-related arguments
 		self.update_database = self.kwargs['update_database']
 		self.dbpath = self.kwargs['dbpath']
 		self.dbname = self.kwargs['dbname']
 
-		# Get DB connection
-		self.db_connection = None
-		self.db_cursor = None
-
 		# Twitter endpoints
 		self.endpoint = self.kwargs['endpoint']
 
-		# Collected data
-		self.data = []
-
-	def _get_db_conn(self):
-		'''
-
-		Connects to sqlite database
-		'''
 		# Build database arguments
-		db_args = {
+		printl('Building database arguments')
+		self.db_args = {
 			'wd': self.wd,
 			'update_database': self.update_database,
 			'dbpath': self.dbpath,
@@ -92,19 +84,19 @@ class ApiTwitter(object):
 		}
 
 		# Database instance
-		self.db = Database(**db_args)
-		return self.db._connect_db()
+		self.db = Database(**self.db_args)
+		self.db_connection, self.db_cursor = self.db._connect_db()
 
+
+		# Collected data
+		self.data = []
+		self.partial_data = False
 
 	def _insert_data(self):
 		'''
 
 		Inserts data into database.
-
-		- Function checks first if there is a database connection.
 		'''
-		if self.db_connection == None:
-			self.db_connection, self.db_cursor = self._get_db_conn()
 
 		# Insert data
 		insert_data(
@@ -114,6 +106,58 @@ class ApiTwitter(object):
 			self.timezone
 		)
 
+	def _connection_retry(self, max_retries):
+		'''
+		'''
+		sleep_for = 15
+		if max_retries > 0:
+			printl('Retrying...')
+			printl(
+				f'Max Retries: 10. LEFT {self.max_retries}'
+			)
+
+			# Sleep
+			time.sleep(sleep_for)
+
+			# Increasing sleep value
+			sleep_for += sleep_for
+
+			# Update data
+			if self.data:
+				self.kwargs['max_id'] = get_max_id(
+					self.data
+				)
+
+				return True
+		else:
+			return False
+
+	def _handle_twitter_error(self, e):
+		'''
+
+		Handles TwitterError and TwitterHTTPError.
+		'''
+		error = e.__class__.__name__
+		e_type, e_value, e_traceback = sys.exc_info()
+
+		if error == 'TwitterError':
+			# Retry < API request failed >
+			if 'Incomplete JSON data' in str(e_value):
+				printl(
+					'TwitterError. Connection error',
+					color='RED'
+				)
+
+				# Decrease MAX RETRIES
+				self.max_retries -= 1
+
+				# Retry
+				retry_status = self._connection_retry(
+					self.max_retries
+				)
+
+				return error, retry_status
+
 	def _endpoint_status_parser(self, endpoint_status):
 		'''
 
@@ -121,7 +165,12 @@ class ApiTwitter(object):
 		'''
 
 		src = {
-			'/statuses/user_timeline': 'statuses'
+			'/statuses/user_timeline': 'statuses',
+			'/search/tweets': 'search',
+			'/followers/ids': 'followers',
+			'/followers/list': 'followers',
+			'/friends/ids': 'friends',
+			'/friends/list': 'friends'
 		}
 
 		return src[endpoint_status]
@@ -131,8 +180,10 @@ class ApiTwitter(object):
 
 		Checks rate limits
 		'''
+		src = self._endpoint_status_parser(endpoint_status)
+
 		status = self.TwitterAPI.application.rate_limit_status()
-		resource = status['resources']['statuses'][endpoint_status]
+		resource = status['resources'][src][endpoint_status]
 
 		# Resources
 		remaining = resource['remaining']
@@ -168,13 +219,6 @@ class ApiTwitter(object):
 
 	Build Twitter API endpoints
 	'''
-	def search_tweets(self):
-		'''
-		'''
-
-		pass
-		
-
 	def user_timeline(self):
 		'''
 
@@ -217,8 +261,6 @@ class ApiTwitter(object):
 
 		Endpoint: user_timeline
 		'''
-		partial_data = False
-		MAX_RETRIES = 5
 		while True:
 			try:
 				statuses = self.TwitterAPI.statuses.user_timeline(
@@ -245,72 +287,67 @@ class ApiTwitter(object):
 					break
 
 			except (TwitterHTTPError, HTTPError, TwitterError) as e:
+				
+
+
+
 				error = e.__class__.__name__
 				e_type, e_value, e_traceback = sys.exc_info()
+				
+
 				if error == 'TwitterError':
-
-
 
 					# Retry < API request failed >
 					if 'Incomplete JSON data' in str(e_value):
-						print ('')
 						printl(
 							'TwitterError. Connection error',
 							color='RED'
 						)
 
-
-						'''
-
-						SELF KWARGS
-
-							->> GET DOWNLOADED DATA
-						'''
-
-
 						# Decrease MAX RETRIES
-						MAX_RETRIES -= 1
+						self.max_retries -= 1
 
-						# Retrying
-						if MAX_RETRIES > 0:
-							printl('Retrying...')
-							printl(
-								f'Max Retries: 5. LEFT {MAX_RETRIES}'
-							)
+						# Retry
+						retry_status = self._connection_retry(
+							self.max_retries
+						)
 
-							# Sleep
-							time.sleep(15)
-
-							# Update data
-							if self.data:
-								self.kwargs['max_id'] = get_max_id(
-									self.data
-								)
-							
+						if retry_status:
 							continue
 						else:
 							if self.data:
-								partial_data = True
+								self.partial_data = True
 								break
 							else:
 								'''
-
 								Quit program
 								'''
-								print ('')
 								printl(
-									'API Error. Try again.',
+									'API Twitter Error',
+									color='RED'
+								)
+								printl(
+									'Ending program. Try again',
 									color='RED'
 								)
 
 								sys.exit()
 
+
+				if error == 'TwitterHTTPError':
+					exceed_api_limit = True
+
+					# sleep application
+					self._sleep_application(endpoint_status)
+
+					continue
+
 		
 
+		
 		# Partial data only
-		if partial_data:
-			print ('')
-			printl('API returned partial data')
+		if self.partial_data:
+			printl('After twitter errors, API returned partial data')
 			printl(
 				f'Tweets collected: {len(self.data)}',
 				color='BLUE'
@@ -319,13 +356,177 @@ class ApiTwitter(object):
 		# Insert data to database
 		printl('Inserting data into database')
 		self._insert_data()
+		
+		return self.data
+	
+	def search_tweets(self):
+		'''
 
+		Returns a collection of relevant Tweets matching a
+		specified query.
+
+		kwargs:
+			- q [query]
+			- geocode
+			- lang
+			- result_type
+			- count
+			- until
+			- since_id
+			- max_id
+			- include_entities
+		'''
+		# Clean Twitter arguments
+		self.kwargs = clean_twitter_arguments(self.kwargs)
+
+		'''
+
+		Query requested
+		'''
+		q = self.kwargs['q']
+		printl(f'Downloading data from query {q}')
+
+		'''
+
+		Check rate limits
+		'''
+		endpoint_status = '/search/tweets'
+		self._sleep_application(endpoint_status)
+
+		'''
+
+		API request
+
+		Endpoint: search tweets
+		'''
+		while True:
+			try:
+				statuses = self.TwitterAPI.search.tweets(
+					**self.kwargs
+				)
+				statuses = statuses['statuses']
+				if len(statuses) > 0:
+					self.data.extend(statuses)
+					max_id = get_max_id(statuses)
+
+					# Download more data
+					while len(statuses) > 0:
+						self.kwargs['max_id'] = max_id
+						statuses = self.TwitterAPI.search.tweets(
+							**self.kwargs
+						)
+
+						#  Get statuses
+						statuses = statuses['statuses']
+						if len(statuses) > 0:
+							max_id = get_max_id(statuses)
+							self.data.extend(statuses)
+
+					break
+			
+			except (TwitterHTTPError, HTTPError, TwitterError) as e:
+				
+
+
+
+				error = e.__class__.__name__
+				e_type, e_value, e_traceback = sys.exc_info()
+
+				if error == 'TwitterError':
+
+					# Retry < API request failed >
+					if 'Incomplete JSON data' in str(e_value):
+						printl(
+							'TwitterError. Connection error',
+							color='RED'
+						)
+
+						# Decrease MAX RETRIES
+						self.max_retries -= 1
+
+						# Retry
+						retry_status = self._connection_retry(
+							self.max_retries
+						)
+
+						if retry_status:
+							continue
+						else:
+							if self.data:
+								self.partial_data = True
+								break
+							else:
+								'''
+								Quit program
+								'''
+								printl(
+									'API Twitter Error',
+									color='RED'
+								)
+								printl(
+									'Ending program. Try again',
+									color='RED'
+								)
+
+								sys.exit()
+
+				if error == 'TwitterHTTPError':
+					exceed_api_limit = True
+
+					# sleep application
+					self._sleep_application(endpoint_status)
+
+					continue
+
+		# Partial data only
+		if self.partial_data:
+			printl('After twitter errors, API returned partial data')
+			printl(
+				f'Tweets collected: {len(self.data)}',
+				color='BLUE'
+			)
+
+		# Insert data to database
+		printl('Inserting data into database')
+		self._insert_data()
 		
 		return self.data
 
-
-	def user_connections(self, **kwargs):
-		'''
+	def friendships(self):
 		'''
 
-		pass
+		Returns followers and friends of one arbitrary user.
+
+		kwargs:
+			- (screen_name | user_id)
+			- cursor
+			- count
+		'''
+		# Add parameter
+		self.kwargs['stringify_ids'] = True
+
+		# Get type of friendship
+		# reference = self.kwargs['friendship_type']
+
+		'''
+
+		Check rate limits
+		'''
+		# endpoint_status = f'/{reference}/ids'
+		# self._sleep_application(endpoint_status)
+
+		'''
+
+		TODO: improve connection
+		'''
+		# if reference == 'followers':
+		# 	users = self.TwitterAPI.followers.ids(**self.kwargs)
+		# else:
+		# 	users = self.TwitterAPI.friends.ids(**self.kwargs)
+
+		# '''
+
+		# Save ids in sql table
+		# '''
+
+		return True

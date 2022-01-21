@@ -83,7 +83,8 @@ class Database(object):
 			else:
 				dbfile = self.dbpath
 
-		return dbfile
+		dbfile = os.path.abspath(dbfile)
+		return dbfile.replace(os.sep, '/')
 
 	def _connect_db(self):
 		'''
@@ -92,13 +93,15 @@ class Database(object):
 		'''
 		# Get database filename
 		dbfile = self._get_database_filename()
+		printl(f'Database at {dbfile}', color='GREEN')
 
 		# Connect database
+		printl('Connecting to database')
 		db_connection = sqlite3.connect(dbfile)
+		printl('Database connected')
 
 		# Get database cursor
 		db_cursor = db_connection.cursor()
-
 
 		'''
 		Database status:

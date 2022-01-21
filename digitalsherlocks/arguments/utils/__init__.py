@@ -43,7 +43,7 @@ def _set_working_directory():
 	stamp = int(time.time())
 
 	# creating a new working directory
-	wd = f'{cwd}/{stamp}/'
+	wd = f'{cwd}/dsherlocks-{stamp}/'
 	if not os.path.exists(wd):
 		os.makedirs(wd, exist_ok=True)
 
@@ -59,8 +59,7 @@ def generate_wd(wd):
 		if wd.endswith('/'):
 			wd = wd[:-1]
 
-		stamp = int(time.time())
-		d = f'{wd}/{stamp}/'
+		d = f'{wd}/digitalsherlocks/'
 		if not os.path.exists(d):
 			os.makedirs(d, exist_ok=True)
 
