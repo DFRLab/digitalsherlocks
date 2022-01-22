@@ -20,11 +20,6 @@ template.py
 tmp/
 **/build
 build/
-test1/
-test2/
-test3/
-test4/
-test5/
 
 # Ignore test data folders
 **/test-data

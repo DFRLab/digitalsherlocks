@@ -584,8 +584,8 @@ def main():
     args = vars(parser.parse_args())
 
     # Logs
-    printl('Welcome', color='GREEN')
-    printl('Program started')
+    printl('Welcome', color='CYAN')
+    printl('Program started', color='GREEN')
     printl('Collecting arguments')
 
     '''
@@ -596,8 +596,7 @@ def main():
     
     
     # get data
-    d = kwarg_handler.connect_service()
-    printl(f'{d}', color='GREEN')
+    kwarg_handler.connect_service()
 
 
 # execute

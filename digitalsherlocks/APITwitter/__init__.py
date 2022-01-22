@@ -43,6 +43,9 @@ class ApiTwitter(object):
 	'''
 	'''
 
+	# API Default URL
+	BASE_URL = 'https://api.twitter.com/1.1'
+
 	def __init__(self, **kwargs):
 		'''
 		'''
@@ -170,7 +173,6 @@ class ApiTwitter(object):
 
 		Returns rate limit status' key (i.e. statuses, friends, etc.)
 		'''
-
 		src = {
 			'/statuses/user_timeline': 'statuses',
 			'/search/tweets': 'search',
@@ -272,98 +274,61 @@ class ApiTwitter(object):
 
 		Endpoint: user_timeline
 		'''
-		while True:
-			try:
-				statuses = self.TwitterAPI.statuses.user_timeline(
-					**self.kwargs
+		api_url = f'{self.BASE_URL}/statuses/user_timeline.json'
+		res = self.UAuth.get(
+			api_url, params=self.kwargs
+		)
+
+		# Get user timeline
+		self.data = res.json()
+		if type(self.data) == list and self.data:
+			'''
+
+			Insert data
+			'''
+			self._insert_data()
+
+			# Get max id
+			max_id = get_max_id(self.data)
+			self.kwargs['max_id'] = max_id
+
+			# Download recent timeline
+			update = True
+			while update:
+				res = self.UAuth.get(
+					api_url, params=self.kwargs
 				)
-				if len(statuses) > 0:
-					self.data.extend(statuses)
+
+				# Statuses
+				self.data = res.json()
+				if len(self.data) > 0:
+					'''
+
+					Insert data
+					'''
+					self._insert_data()
 
 					# Get max id
-					max_id = get_max_id(statuses)
-
-					# Download up to 3,200 user tweets
-					while len(statuses) > 0:
-						self.kwargs['max_id'] = max_id
-						statuses = \
-							self.TwitterAPI.statuses.user_timeline(
-								**self.kwargs
-							)
-
-						if len(statuses) > 0:
-							self.data.extend(statuses)
-							max_id = get_max_id(statuses)
-
-				break
-
-			except (TwitterHTTPError, HTTPError, TwitterError) as e:
-				
-
-
-
-				error = e.__class__.__name__
-				e_type, e_value, e_traceback = sys.exc_info()
-				
-
-				if error == 'TwitterError':
-
-					# Retry < API request failed >
-					if 'Incomplete JSON data' in str(e_value):
-						printl(
-							'TwitterError. Connection error',
-							color='RED'
-						)
-
-						# Decrease MAX RETRIES
-						self.max_retries -= 1
-
-						# Retry
-						retry_status = self._connection_retry(
-							self.max_retries
-						)
-
-						if retry_status:
-							continue
-						else:
-							if self.data:
-								self.partial_data = True
-								break
-							else:
-								'''
-								Quit program
-								'''
-								printl(
-									'API Twitter Error',
-									color='RED'
-								)
-								printl(
-									'Ending program. Try again',
-									color='RED'
-								)
-
-								sys.exit()
-
-
-				if error == 'TwitterHTTPError':
-					exceed_api_limit = True
-
-					# sleep application
-					self._sleep_application(endpoint_status)
-
-					continue
-		
-		# Partial data only
-		if self.partial_data:
-			printl('After twitter errors, API returned partial data')
-			printl(
-				f'Tweets collected: {len(self.data)}',
-				color='BLUE'
-			)
-			
-		# Insert data to database
-		printl('Inserting data into database')
-		self._insert_data()
+					max_id = get_max_id(self.data)
+					self.kwargs['max_id'] = max_id
+				else:
+					printl('Done')
+					printl('Program closed', color='GREEN')
+					update = False
+		else:
+			if type(self.data) == dict:
+				if 'errors' in self.data.keys():
+					printl('Errors found', color='RED')
+					e = [i['message'] for i in self.data['errors']]
+					for message in e:
+						printl(f'{message}', color='RED')
+			else:
+				printl(
+					f'No data available for users {u}',
+					color='YELLOW'
+				)
+				printl('User timeline < state 1 >', color='YELLOW')
+				printl(f'Response: {self.data}', color='YELLOW')
 		
 		return
 
@@ -410,8 +375,7 @@ class ApiTwitter(object):
 
 		Endpoint: search tweets
 		'''
-		api_url = 'https://api.twitter.com/1.1/search/tweets.json'
-
+		api_url = f'{self.BASE_URL}/search/tweets.json'
 		res = self.UAuth.get(
 			api_url, params=self.kwargs
 		)
@@ -429,11 +393,11 @@ class ApiTwitter(object):
 
 				# Get max id
 				max_id = get_max_id(self.data)
+				self.kwargs['max_id'] = max_id
 
-				# Download more data
+				# Download recent tweets
 				update = True
 				while update:
-					self.kwargs['max_id'] = max_id
 					res = self.UAuth.get(
 						api_url, params=self.kwargs
 					)
@@ -444,9 +408,7 @@ class ApiTwitter(object):
 					# Get tweets
 					if 'statuses' in statuses.keys():
 						self.data = statuses['statuses']
-					
 						if len(self.data) > 0:
-
 							'''
 
 							Insert data
@@ -455,30 +417,53 @@ class ApiTwitter(object):
 
 							# Get max id
 							max_id = get_max_id(self.data)
-
+							self.kwargs['max_id'] = max_id
 						else:
+							printl('Done')
+							printl('Program closed', color='GREEN')
 							update = False
 					else:
-
-						# Sleep application
 						if 'errors' in statuses.keys():
 							e = [
 								i['message']
 								for i in statuses['errors']
 							]
 
-							if 'Rate limit exceeded' in e:			
+							if 'Rate limit exceeded' in e:	
+								# Sleep application		
 								self._sleep_application(
 									endpoint_status
 								)
+								printl('Downloading')
 							else:
+								print ('')
+								print ('Search tweets errors')
 								print (statuses['errors'])
 								continue
 						else:
+							print ('')
+							printl(
+								'Search tweets < state 2 >',
+								color='RED'
+							)
+							print ('')
 							print (statuses)
 							continue
+			else:
+				printl(
+					f'No tweets matching query {q}',
+					color='YELLOW'
+				)
+		else:
+			print ('')
+			printl(
+				'Search tweets < state 1 >',
+				color='RED'
+			)
+			print ('')
+			print (statuses)
 
-		return True
+		return
 
 	def _save_friendship_ids(self, data):
 		'''
@@ -494,7 +479,6 @@ class ApiTwitter(object):
 		# Insert data
 		self.db_cursor.executemany(sql, data)
 		self.db_connection.commit()
-
 
 	def friendships(self):
 		'''
@@ -533,6 +517,26 @@ class ApiTwitter(object):
 		endpoint_status = f'/{reference}/ids'
 		self._sleep_application(endpoint_status)
 
+		'''
+
+		API request
+
+		Endpoint: frienships [followers, friends]
+		'''
+		api_url = f'{self.BASE_URL}/{reference}/ids.json'
+		res = self.UAuth.get(
+			api_url, params=self.kwargs
+		)
+
+		# Get users' ids
+		users = res.json()
+		if 'ids' in users.keys():
+			self.data = [tuple([i]) for i in users['ids']]
+		else:
+			pass
+
+
+
 
 		'''
 
@@ -548,6 +552,8 @@ class ApiTwitter(object):
 					users = self.TwitterAPI.friends.ids(
 						**self.kwargs
 					)
+
+
 
 				# Inserting batch of data
 				self.data = [tuple([i]) for i in users['ids']]
