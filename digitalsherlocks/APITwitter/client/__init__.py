@@ -30,7 +30,6 @@ import webbrowser
 
 # import from modules < authentication >
 from APITwitter.config.key import key
-from twitter import OAuth, Twitter
 from cryptography.fernet import Fernet
 from requests_oauthlib import OAuth1, OAuth1Session
 
@@ -325,18 +324,11 @@ class TwitterAuthentication(object):
 		else:
 			# Build api acces via user authentication
 			self.api_access = self._request_user_verification()
-		
-		
-		# Connect to Twitter API
-		Auth = OAuth(**self.api_access)
-		TAuth = Twitter(auth=Auth)
-
+				
 		# Create user authentication
-		oauth_user = OAuth1Session(
+		return OAuth1Session(
 			client_key=self.api_access['consumer_key'],
 			client_secret=self.api_access['consumer_secret'],
 			resource_owner_key=self.api_access['token'],
 			resource_owner_secret=self.api_access['token_secret']
 		)
-
-		return TAuth, oauth_user

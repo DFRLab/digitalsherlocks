@@ -14,8 +14,8 @@ import sys
 import time
 
 from APITwitter.client import TwitterAuthentication
-from twitter import TwitterHTTPError, TwitterError
 from urllib.error import HTTPError
+from tqdm import tqdm
 
 # import twitter utils
 from APITwitter.utils import (
@@ -26,7 +26,7 @@ from APITwitter.utils import (
 from APITwitter.database import Database
 
 # import log utils
-from logs import printl
+from logs import printl, log_time_fmt
 
 '''
 
@@ -56,7 +56,7 @@ class ApiTwitter(object):
 		# Twitter API user connection
 		printl('Twitter user authentication')
 		self.TwitterAuth = TwitterAuthentication()
-		self.TwitterAPI, self.UAuth = self.TwitterAuth.connect()
+		self.UAuth = self.TwitterAuth.connect()
 		printl('Authentication completed', color='BLUE')
 
 		# Twitter API connection - retries
@@ -116,58 +116,6 @@ class ApiTwitter(object):
 			self.timezone
 		)
 
-	def _connection_retry(self, max_retries):
-		'''
-		'''
-		sleep_for = 15
-		if max_retries > 0:
-			printl('Retrying...')
-			printl(
-				f'Max Retries: 10. LEFT {self.max_retries}'
-			)
-
-			# Sleep
-			time.sleep(sleep_for)
-
-			# Increasing sleep value
-			sleep_for += sleep_for
-
-			# Update data
-			if self.data:
-				self.kwargs['max_id'] = get_max_id(
-					self.data
-				)
-
-				return True
-		else:
-			return False
-
-	def _handle_twitter_error(self, e):
-		'''
-
-		Handles TwitterError and TwitterHTTPError.
-		'''
-		error = e.__class__.__name__
-		e_type, e_value, e_traceback = sys.exc_info()
-
-		if error == 'TwitterError':
-			# Retry < API request failed >
-			if 'Incomplete JSON data' in str(e_value):
-				printl(
-					'TwitterError. Connection error',
-					color='RED'
-				)
-
-				# Decrease MAX RETRIES
-				self.max_retries -= 1
-
-				# Retry
-				retry_status = self._connection_retry(
-					self.max_retries
-				)
-
-				return error, retry_status
-
 	def _endpoint_status_parser(self, endpoint_status):
 		'''
 
@@ -221,11 +169,18 @@ class ApiTwitter(object):
 				color='YELLOW'
 			)
 			printl(
-				f'Sleeping application for {sleep_for} secs...'
+				f'Sleeping application for {sleep_for} secs...',
+				color='YELLOW'
 			)
 
 			# Sleep application
-			time.sleep(sleep_for)
+			pbar = tqdm(total=sleep_for)
+			pbar.set_description(f'{log_time_fmt()} - Sleeping: ')
+			for i in range(sleep_for):
+				time.sleep(1)
+				pbar.update(1)
+
+			pbar.close()
 
 			# Awake
 			printl('Awake', color='GREEN')
@@ -325,7 +280,8 @@ class ApiTwitter(object):
 				if type(self.data) == dict:
 					if 'errors' in self.data.keys():
 						e = [
-							i['message'] for i in self.data['errors']
+							i['message']
+							for i in self.data['errors']
 						]
 
 						if 'Rate limit exceeded' in e:
@@ -601,7 +557,7 @@ class ApiTwitter(object):
 			while True:
 				res = self.UAuth.get(
 					api_url,
-					params={user_id: ','.join(accounts)}
+					params={'user_id': ','.join(accounts)}
 				)
 
 				# Get users' data
@@ -648,6 +604,10 @@ class ApiTwitter(object):
 
 							break
 
+		# Close program
+		printl('Done')
+		printl('Program closed', color='GREEN')
+		
 		return
 
 
