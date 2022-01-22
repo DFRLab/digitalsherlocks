@@ -96,12 +96,6 @@ class ApiTwitter(object):
 		self.data = []
 		self.partial_data = False
 
-	def _reset_data(self):
-		'''
-		'''
-		self.data = []
-
-
 	def _insert_data(self):
 		'''
 
@@ -175,7 +169,7 @@ class ApiTwitter(object):
 
 			# Sleep application
 			pbar = tqdm(total=sleep_for)
-			pbar.set_description(f'{log_time_fmt()} - Sleeping: ')
+			pbar.set_description(f'{log_time_fmt()} - Sleeping')
 			for i in range(sleep_for):
 				time.sleep(1)
 				pbar.update(1)
@@ -552,6 +546,8 @@ class ApiTwitter(object):
 
 		# Hydrating users
 		printl('Hydrating users')
+		pbar = tqdm(total=len(ids))
+		pbar.set_description(f'{log_time_fmt()} - Hydrating')
 		api_url = f'{self.BASE_URL}/users/lookup.json'
 		for accounts in ids:
 			while True:
@@ -573,6 +569,7 @@ class ApiTwitter(object):
 						self.data
 					)
 
+					pbar.update(1)
 					break
 				else:
 					if type(self.data) == dict:
@@ -603,6 +600,9 @@ class ApiTwitter(object):
 							printl(f'> {self.data}', color='RED')
 
 							break
+		
+		# Close pbar
+		pbar.close()
 
 		# Close program
 		printl('Done')
