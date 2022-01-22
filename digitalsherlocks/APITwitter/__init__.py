@@ -192,7 +192,12 @@ class ApiTwitter(object):
 		'''
 		src = self._endpoint_status_parser(endpoint_status)
 
-		status = self.TwitterAPI.application.rate_limit_status()
+		# Api URL
+		url = f'{self.BASE_URL}/application/rate_limit_status.json'
+		res = self.UAuth.get(url, params={'resources': src})
+
+		# Get status
+		status = res.json()
 		resource = status['resources'][src][endpoint_status]
 
 		# Resources
@@ -301,7 +306,7 @@ class ApiTwitter(object):
 
 				# Statuses
 				self.data = res.json()
-				if len(self.data) > 0:
+				if type(self.data) == list and self.data:
 					'''
 
 					Insert data
@@ -311,10 +316,43 @@ class ApiTwitter(object):
 					# Get max id
 					max_id = get_max_id(self.data)
 					self.kwargs['max_id'] = max_id
-				else:
+
+				if type(self.data) == list and not self.data:
 					printl('Done')
 					printl('Program closed', color='GREEN')
 					update = False
+
+				if type(self.data) == dict:
+					if 'errors' in self.data.keys():
+						e = [
+							i['message'] for i in self.data['errors']
+						]
+
+						if 'Rate limit exceeded' in e:
+							'''
+
+							Sleep application
+							'''
+							self._sleep_application(
+								endpoint_status
+							)
+
+							printl('Downloading')
+							continue
+					else:
+						'''
+
+						Dev Diagnosis
+						'''
+						printl(
+							'User timeline < state 2 >',
+							color='RED'
+						)
+						printl('Dev Diagnosis', color='RED')
+						printl(f'> {self.data}', color='RED')
+						printl('Program closed', color='GREEN')
+						update = False
+
 		else:
 			if type(self.data) == dict:
 				if 'errors' in self.data.keys():
@@ -322,13 +360,22 @@ class ApiTwitter(object):
 					e = [i['message'] for i in self.data['errors']]
 					for message in e:
 						printl(f'{message}', color='RED')
+
+					# Close program
+					printl('Program closed', color='GREEN')
 			else:
+				'''
+
+				Dev Diagnosis
+				'''
 				printl(
 					f'No data available for users {u}',
 					color='YELLOW'
 				)
-				printl('User timeline < state 1 >', color='YELLOW')
-				printl(f'Response: {self.data}', color='YELLOW')
+				printl('User timeline < state 1 >', color='RED')
+				printl('Dev Diagnosis', color='RED')
+				printl(f'> {self.data}', color='RED')
+				printl('Program closed', color='GREEN')
 		
 		return
 
@@ -360,7 +407,7 @@ class ApiTwitter(object):
 		Query requested
 		'''
 		q = self.kwargs['q']
-		printl(f'Downloading data from query {q}')
+		printl(f'Downloading data from query: < {q} >')
 
 		'''
 
@@ -430,42 +477,73 @@ class ApiTwitter(object):
 							]
 
 							if 'Rate limit exceeded' in e:	
-								# Sleep application		
+								'''
+
+								Sleep application
+								'''
 								self._sleep_application(
 									endpoint_status
 								)
 								printl('Downloading')
 							else:
-								print ('')
-								print ('Search tweets errors')
-								print (statuses['errors'])
-								continue
+								'''
+
+								Dev Diagnosis
+								'''
+								printl(
+									'Search tweets errors',
+									color='RED'
+								)
+								printl('Dev Diagnosis', color='RED')
+								printl(
+									f'> {statuses["errors"]}'
+								)
+								printl(
+									'Program closed',
+									color='GREEN'
+								)
+
+								break
 						else:
-							print ('')
+							'''
+
+							Dev Diagnosis
+							'''
 							printl(
 								'Search tweets < state 2 >',
 								color='RED'
 							)
-							print ('')
-							print (statuses)
-							continue
+							printl('Dev Diagnosis', color='RED')
+							printl(f'> {statuses}', color='RED')
+							printl('Program closed', color='GREEN')
+							
+							break
 			else:
 				printl(
-					f'No tweets matching query {q}',
+					f'No tweets matching query: < {q} >',
 					color='YELLOW'
 				)
+				printl(
+					f'No data was saved',
+					color='YELLOW'
+				)
+				printl('Program closed', color='GREEN')
 		else:
-			print ('')
+			'''
+
+			Dev Diagnosis
+			'''
 			printl(
-				'Search tweets < state 1 >',
+				'No statuses in search tweets < state 1 >',
 				color='RED'
 			)
-			print ('')
-			print (statuses)
+			printl('Dev Diagnosis', color='RED')
+			printl(f'> {statuses}', color='RED')
+			printl('Program closed', color='GREEN')
 
 		return
 
-	def _save_friendship_ids(self, data):
+	def _save_friendship_ids(self):
 		'''
 		'''
 		sql = '''
@@ -477,8 +555,101 @@ class ApiTwitter(object):
 		'''
 
 		# Insert data
-		self.db_cursor.executemany(sql, data)
+		self.db_cursor.executemany(sql, self.data)
 		self.db_connection.commit()
+
+	def hydrate_users(self):
+		'''
+
+		Pull users' data
+		'''
+		sql = '''
+		SELECT *
+		FROM ids
+		'''
+		self.db_cursor.execute(sql)
+
+		# Get data
+		self.data = [
+			j for i in self.db_cursor.fetchall() for j in i
+		]
+
+		if not self.data:
+			printl(f'No data was saved', color='YELLOW')
+			printl('Program closed', color='GREEN')
+			sys.exit()
+
+		# Building batchs of data
+		batch = 100
+		ids = [
+			self.data[i: i + batch] for i in range(
+				0, len(self.data), batch
+			)
+		]
+
+		'''
+
+		Check rate limits
+		'''
+		endpoint_status = f'/users/lookup'
+		self._sleep_application(endpoint_status)
+
+		# Hydrating users
+		printl('Hydrating users')
+		api_url = f'{self.BASE_URL}/users/lookup.json'
+		for accounts in ids:
+			while True:
+				res = self.UAuth.get(
+					api_url,
+					params={user_id: ','.join(accounts)}
+				)
+
+				# Get users' data
+				self.data = res.json()
+				if type(self.data) == list and self.data:
+					'''
+
+					Insert data
+					'''
+					insert_users_data(
+						self.db_connection,
+						self.db_cursor,
+						self.data
+					)
+
+					break
+				else:
+					if type(self.data) == dict:
+						if 'errors' in self.data.keys():	
+							e = [
+								i['message']
+								for i in self.data['errors']
+							]
+							if 'Rate limit exceeded' in e:	
+								'''
+
+								Sleep application
+								'''
+								self._sleep_application(
+									endpoint_status
+								)
+								printl('Hydrating')
+						else:
+							'''
+
+							Dev Diagnosis
+							'''
+							printl(
+								'Users lookup < state 1 >',
+								color='RED'
+							)
+							printl('Dev Diagnosis', color='RED')
+							printl(f'> {self.data}', color='RED')
+
+							break
+
+		return
+
 
 	def friendships(self):
 		'''
@@ -532,199 +703,74 @@ class ApiTwitter(object):
 		users = res.json()
 		if 'ids' in users.keys():
 			self.data = [tuple([i]) for i in users['ids']]
-		else:
-			pass
+			self._save_friendship_ids()
 
+			# Get cursor
+			api_cursor = users['next_cursor']
+			while api_cursor != 0:
+				self.kwargs['cursor'] = api_cursor
+				res = self.UAuth.get(
+					api_url, params=self.kwargs
+				)
 
+				'''
 
-
-		'''
-
-		TODO: improve connection
-		'''
-		while True:
-			try:
-				if reference == 'followers':
-					users = self.TwitterAPI.followers.ids(
-						**self.kwargs
-					)
-				else:
-					users = self.TwitterAPI.friends.ids(
-						**self.kwargs
-					)
-
-
-
-				# Inserting batch of data
-				self.data = [tuple([i]) for i in users['ids']]
-				self._save_friendship_ids(self.data)
-
-				# Get cursor
-				api_cursor = users['next_cursor']
-				while api_cursor != 0:
-					self.kwargs['cursor'] = api_cursor
-					if reference == 'followers':
-						users = self.TwitterAPI.followers.ids(
-							**self.kwargs
-						)
-					else:
-						users = self.TwitterAPI.friends.ids(
-							**self.kwargs
-						)
-
-					'''
-
-					Get users data
-					'''
+				Get users data
+				'''
+				users = res.json()
+				if 'ids' in users.keys():
 					self.data = [tuple([i]) for i in users['ids']]
-					if self.data:
-						self._save_friendship_ids(self.data)
+					self._save_friendship_ids()
 
-						# Get next cursor
-						api_cursor = users['next_cursor']
+					# Get cursor
+					api_cursor = users['next_cursor']
+				else:
+					if 'errors' in users.keys():
+						e = [
+							i['message']
+							for i in statuses['errors']
+						]
 
-				break
+						if 'Rate limit exceeded' in e:	
+							'''
+							Sleep application
+							'''	
+							self._sleep_application(
+								endpoint_status
+							)
+							printl('Downloading')
+					else:
+						'''
 
-			except (TwitterHTTPError, HTTPError, TwitterError) as e:
-
-
-				error = e.__class__.__name__
-				e_type, e_value, e_traceback = sys.exc_info()
-
-				if error == 'TwitterError':
-
-					# Retry < API request failed >
-					if 'Incomplete JSON data' in str(e_value):
+						Dev Diagnosis
+						'''
 						printl(
-							'TwitterError. Connection error',
+							'No ids in users < state 2 >',
 							color='RED'
 						)
-
-						# Decrease MAX RETRIES
-						self.max_retries -= 1
-
-						# Retry
-						retry_status = self._connection_retry(
-							self.max_retries
-						)
-
-						if retry_status:
-							continue
-						else:
-							if self.data:
-								self.partial_data = True
-								break
-							else:
-								'''
-								Quit program
-								'''
-								printl(
-									'API Twitter Error',
-									color='RED'
-								)
-								printl(
-									'Ending program. Try again',
-									color='RED'
-								)
-
-								sys.exit()
-
-				if error == 'TwitterHTTPError':
-					exceed_api_limit = True
-
-					# sleep application
-					self._sleep_application(endpoint_status)
-					
-					continue
-
-
-		'''
-		
-		Pull users' data
-
-		-> hydrate users
-		'''
-		sql = '''
-		SELECT *
-		FROM ids
-		'''
-		self.db_cursor.execute(sql)
-
-		# Get data
-		self.data = [j for i in self.db_cursor.fetchall() for j in i]
-		batch = 100
-		ids = [
-			self.data[i: i + batch] for i in range(
-				0, len(self.data), batch
-			)
-		]
-
-		'''
-
-		Check rate limits
-		'''
-		endpoint_status = f'/users/lookup'
-		self._sleep_application(endpoint_status)
-
-		# Hydrating users
-		printl('Hydrating users')
-
-		for accounts in ids:
-			sleep_for = 15
-			while True:
-				try:
-					self.data = self.TwitterAPI.users.lookup(
-						user_id=','.join(accounts)
-					)
-
-					if self.data:
-						'''
-
-						Insert data
-						'''
-						insert_users_data(
-							self.db_connection,
-							self.db_cursor,
-							self.data
-						)
-
-					break
-				except (TwitterHTTPError, HTTPError, TwitterError) as e:
-
-
-					error = e.__class__.__name__
-					e_type, e_value, e_traceback = sys.exc_info()
-
-					if error == 'TwitterError':
-
-						# Retry < API request failed >
-						if 'Incomplete JSON data' in str(e_value):
-							printl(
-								'TwitterError. Connection error',
-								color='RED'
-							)
-
-							# Decrease MAX RETRIES
-							self.max_retries -= 1
-							if self.max_retries > 0:
-								printl('Retrying...')
-								printl(
-									f'Max Retries: 10. LEFT {self.max_retries}'
-								)
-
-								# Sleep
-								time.sleep(sleep_for)
-
-								# Increasing sleep value
-								sleep_for += sleep_for
-							
-
-					if error == 'TwitterHTTPError':
-						exceed_api_limit = True
-
-						# sleep application
-						self._sleep_application(endpoint_status)
+						printl('Dev Diagnosis', color='RED')
+						printl(f'> {users}', color='RED')
 						
-						continue
+						break
+		else:
+			if 'errors' in users.keys():
+				printl('Errors found', color='RED')
+				e = [i['message'] for i in users['errors']]
+				for message in e:
+					printl(f'{message}', color='RED')
+			else:
+				'''
 
-		return 
+				Dev Diagnosis
+				'''
+				printl(
+					'No ids in users < state 1 >',
+					color='RED'
+				)
+				printl('Dev Diagnosis', color='RED')
+				printl(f'> {users}', color='RED')
+
+		# Hydrate users
+		self.hydrate_users()
+
+		return
