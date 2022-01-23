@@ -664,8 +664,6 @@ class ApiTwitter(object):
 		except KeyError:
 			u = self.kwargs['user_id']
 
-		printl(f'Downloading {reference} from {u}')
-
 		'''
 
 		Check rate limits
@@ -679,6 +677,7 @@ class ApiTwitter(object):
 
 		Endpoint: frienships [followers, friends]
 		'''
+		printl(f'Downloading {reference} from {u}')
 		api_url = f'{self.BASE_URL}/{reference}/ids.json'
 		res = self.UAuth.get(
 			api_url, params=self.kwargs
@@ -713,7 +712,7 @@ class ApiTwitter(object):
 					if 'errors' in users.keys():
 						e = [
 							i['message']
-							for i in statuses['errors']
+							for i in users['errors']
 						]
 
 						if 'Rate limit exceeded' in e:	
