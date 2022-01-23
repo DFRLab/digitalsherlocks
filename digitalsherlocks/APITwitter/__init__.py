@@ -91,6 +91,22 @@ class ApiTwitter(object):
 		self.db = Database(**self.db_args)
 		self.db_connection, self.db_cursor = self.db._connect_db()
 
+		'''
+
+		Modify kwargs if database will be updated using database
+		attrs: [usernames, queries]
+		'''
+
+
+		'''
+
+		if self.update_database and self.update_attrs:
+			self.kwargs = self.db._return_database_attrs(
+				self.db_connection, self.db_cursor
+			)
+
+
+		'''
 
 		# Collected data
 		self.data = []
@@ -102,12 +118,22 @@ class ApiTwitter(object):
 		Inserts data into database.
 		'''
 
+		# Search request
+		if self.endpoint == 'users':
+			search = self.kwargs['screen_name'] \
+				if 'screen_name' in self.kwargs.keys() \
+				else self.kwargs['user_id']
+		else:
+			search = self.kwargs['q']
+
 		# Insert data
 		insert_data(
 			self.db_connection,
 			self.db_cursor,
 			self.data,
-			self.timezone
+			self.timezone,
+			search,
+			self.endpoint
 		)
 
 	def _endpoint_status_parser(self, endpoint_status):
@@ -609,7 +635,6 @@ class ApiTwitter(object):
 		printl('Program closed', color='GREEN')
 		
 		return
-
 
 	def friendships(self):
 		'''

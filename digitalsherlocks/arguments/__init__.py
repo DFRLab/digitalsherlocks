@@ -80,6 +80,10 @@ class ProcessArguments(object):
 			updates will target the database.
 			'''
 			self.args['wd'] = generate_wd(self.args['wd'])
+		else:
+			dbpath = self.args['dbpath']
+			self.args['wd'] = os.path.dirname(dbpath) \
+				if self.args['wd'] == None else self.args['wd']
 
 		printl('Arguments ready')
 
@@ -111,7 +115,7 @@ class ProcessArguments(object):
 		'''
 		api_twitter = ApiTwitter(**kwargs)
 
-		# test
+		# Service < tmp process >
 		if service == 'twitter':
 			endpoint = kwargs['endpoint']
 

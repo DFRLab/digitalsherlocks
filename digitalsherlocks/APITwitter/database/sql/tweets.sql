@@ -1,4 +1,5 @@
 -- create tables
+
 CREATE TABLE users(
   id VARCHAR NOT NULL,
   id_str VARCHAR NOT NULL,
@@ -101,6 +102,8 @@ CREATE TABLE tweet(
   lang_code VARCHAR (5),
   place_id VARCHAR REFERENCES place (id),
   counter INTEGER,
+  search_request VARCHAR NOT NULL,
+  endpoint_type VARCHAR NOT NULL,
   PRIMARY KEY (id)
 );
 

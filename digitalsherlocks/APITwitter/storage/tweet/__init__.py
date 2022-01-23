@@ -151,7 +151,7 @@ def process_fields(key):
     return False
 
 # process raw data
-def get_tweet_data(raw_data, timezone):
+def get_tweet_data(raw_data, timezone, search_request, endpoint):
     ''' Reads raw data and extracts tweet attrs
     '''
     k = 'tweet'
@@ -183,6 +183,10 @@ def get_tweet_data(raw_data, timezone):
         )
     ]
 
+    # Adding search request
+    data['search_request'] = search_request
+    data['endpoint_type'] = endpoint
+
     # replace null values by None
     data = data.where((pd.notnull(data)), None)
 
@@ -191,10 +195,13 @@ def get_tweet_data(raw_data, timezone):
     return data[order].copy()
 
 # insert tweet data
-def insert_tweet_data(db_connection, cursor, raw_data, timezone):
+def insert_tweet_data(db_connection, cursor, raw_data, timezone,
+    search_request, endpoint):
     ''' Inserts tweet attrs into <tweet> table
     '''
-    data = get_tweet_data(raw_data, timezone)
+    data = get_tweet_data(
+        raw_data, timezone, search_request, endpoint
+    )
     sql = """
     INSERT INTO tweet(
         'id', 'id_str', 'created_at_timestamp', 'created_at', 'created_at_year',
@@ -215,11 +222,12 @@ def insert_tweet_data(db_connection, cursor, raw_data, timezone):
         'rt_original_date_time_hour', 'rt_original_date_hour',
         'rt_original_date_minute', 'rt_original_date_second',
         'rt_original_date_quarter', 'rt_original_date_dayofyear',
-        'rt_original_date_weekofyear', 'lang_code', 'place_id', 'counter'
+        'rt_original_date_weekofyear', 'lang_code', 'place_id', 'counter',
+        'search_request', 'endpoint_type'
     ) VALUES(
         ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
         ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-        ?, ?, ?, ?, ?, ?
+        ?, ?, ?, ?, ?, ?, ?, ?
     )
     ON CONFLICT (id) DO
     UPDATE SET

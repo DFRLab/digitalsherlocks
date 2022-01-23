@@ -86,6 +86,14 @@ class Database(object):
 		dbfile = os.path.abspath(dbfile)
 		return dbfile.replace(os.sep, '/')
 
+	def _return_database_attrs(self, db_connection, db_cursor):
+		'''
+		'''
+		sql = '''
+		'''
+
+		pass
+
 	def _connect_db(self):
 		'''
 
@@ -120,23 +128,5 @@ class Database(object):
 
 			# Commit results
 			db_connection.commit()
-
-			'''
-
-			Add --> ABS PATH for dbfile
-
-			print ('')
-			print (f'Database created at {dbfile}')
-			print ('')
-			'''
-
-		'''
-		ELSE
-		
-		LOG RESPONSE
-
-		GET ARGUMENTS FROM THE EXISTING DATABASE, IF NEEDED
-			GET ENDPOINT. WHICH ENDPOINT WILL BE CALLED????
-		'''
 
 		return db_connection, db_cursor

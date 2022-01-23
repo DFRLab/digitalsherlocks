@@ -15,14 +15,18 @@ from APITwitter.storage.media import insert_media_data
 from APITwitter.storage.urls import insert_urls_data
 
 # main function -> insert data
-def insert_data(db_connection, cursor, raw_data, timezone):
+def insert_data(db_connection, cursor, raw_data, timezone,
+    search_request, endpoint):
     '''
     '''
     # users
     insert_users_data(db_connection, cursor, raw_data, timezone)
 
     # tweet
-    insert_tweet_data(db_connection, cursor, raw_data, timezone)
+    insert_tweet_data(
+        db_connection, cursor, raw_data, timezone, search_request,
+        endpoint
+    )
 
     # media tweet
     insert_media_tweet_data(db_connection, cursor, raw_data)

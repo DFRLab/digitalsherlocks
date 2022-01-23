@@ -124,27 +124,31 @@ def order_columns_to_sql(key):
             'id', 'id_str', 'id_media', 'id_str_media'
         ],
         'media_video': [
-            "id", "id_str", "duration_millis", "duration_secs", "duration_mins",
-            "url", "content_type", "bitrate", "monetizable", "counter"
+            "id", "id_str", "duration_millis", "duration_secs",
+            "duration_mins", "url", "content_type", "bitrate",
+            "monetizable", "counter"
         ],
         'mentions': [
             "id", "id_str", "id_from_user", "id_str_from_user",
-            "screen_name_from_user", "id_user", "id_str_user", "screen_name_user",
-            "counter"
+            "screen_name_from_user", "id_user", "id_str_user",
+            "screen_name_user", "counter"
         ],
         'hashtags': [
             "id", "id_str", "id_from_user", "id_str_from_user",
             "screen_name_from_user", "hashtag", "counter"
         ],
         'users': [
-            'id', 'id_str', 'screen_name', 'name', 'created_at_timestamp',
-            'created_at', 'created_at_year', 'created_at_month', 'created_at_day',
-            'created_at_weekday', 'created_at_month_name', 'created_at_day_name',
-            'created_at_time_hour', 'created_at_hour', 'created_at_minute',
-            'created_at_second', 'created_at_quarter', 'created_at_dayofyear',
-            'created_at_weekofyear', 'description', 'statuses_count', 'protected',
-            'verified', 'followers_count', 'favourites_count', 'friends_count',
-            'listed_count', 'location', 'profile_image_url_https', 'url'
+            'id', 'id_str', 'screen_name', 'name',
+            'created_at_timestamp', 'created_at', 'created_at_year',
+            'created_at_month', 'created_at_day', 'created_at_weekday',
+            'created_at_month_name', 'created_at_day_name',
+            'created_at_time_hour', 'created_at_hour',
+            'created_at_minute', 'created_at_second', 'created_at_quarter',
+            'created_at_dayofyear', 'created_at_weekofyear',
+            'description', 'statuses_count', 'protected', 'verified',
+            'followers_count', 'favourites_count', 'friends_count',
+            'listed_count', 'location', 'profile_image_url_https',
+            'url'
         ],
         'place': [
             'id', 'name', 'full_name', 'country', 'country_code', 'place_type',
@@ -169,7 +173,8 @@ def order_columns_to_sql(key):
             'rt_original_date_time_hour', 'rt_original_date_hour',
             'rt_original_date_minute', 'rt_original_date_second',
             'rt_original_date_quarter', 'rt_original_date_dayofyear',
-            'rt_original_date_weekofyear', 'lang_code', 'place_id', 'counter'
+            'rt_original_date_weekofyear', 'lang_code', 'place_id', 'counter',
+            'search_request', 'endpoint_type'
         ],
         'media': [
             'id', 'id_str', 'url', 'expanded_url', 'media_url_https', 'type',
