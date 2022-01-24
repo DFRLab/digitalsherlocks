@@ -38,8 +38,9 @@ def clean_twitter_arguments(args):
 	'''
 	# local arguments
 	l = [
-		'wd', 'service', 'update_database', 'dbpath', 'dbname',
-		'endpoint', 'max_retries', 'timezone', 'friendship_type'
+		'wd', 'service', 'update_database', 'update_db_attrs',
+		'dbpath', 'dbname', 'endpoint', 'timezone',
+		'friendship_type'
 	]
 
 	# filter keys

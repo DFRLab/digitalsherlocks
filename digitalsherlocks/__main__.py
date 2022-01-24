@@ -96,7 +96,7 @@ def main():
         Examples:
 
         Add a custom working directory.
-          $ digitalsherlocks cli -wd path/to/my/folder
+          $ digitalsherlocks cli -wd path/to/folder
 
         Shows help message
           $ digitalsherlocks cli -h
@@ -151,13 +151,19 @@ def main():
           $ digitalsherlocks cli twitter --add-db-name myresearch
 
         Update an existing database
-          $ digitalsherlocks cli twitter --update-database --db-path path/to/my/file.db
+          $ digitalsherlocks cli twitter --update-database --db-path path/file.db
+
+        Update an existing database using previous searches.
+          $ digitalsherlocks cli twitter --update-database --db-path path/file.db --using-db-attrs
 
         Shows help message for Twitter user-timeline endpoint
           $ digitalsherlocks cli twitter users -h
 
         Shows help message for Twitter search tweets endpoint
           $ digitalsherlocks cli twitter tweets -h
+
+        Shows help message for friendships-related endpoints
+          $ digitalsherlocks cli twitter friendships -h
         '''.lstrip()
     )
 
@@ -189,31 +195,28 @@ def main():
         required='--update-database' in sys.argv
     )
 
+    # update an exiting database using db attrs [previous searches]
+    twitter.add_argument(
+        '--using-db-attrs',
+        help=aligntext('''Updates database using previous searches
+        only. Keep in mind that any subcomnand [users, tweets,
+        friendships] will be ignored if --using-db-attrs is 
+        '''),
+        action='store_true',
+        default=False,
+        dest='update_db_attrs'
+    )
+
     # custom database name
     twitter.add_argument(
         '--add-db-name',
         type=str,
         help=aligntext('''Creates a custom database name. Default:
-        data.db. This argument will not take into account if a
-        <db path> or an existing database was added using the
-        --db-path argument.
+        data.db. This argument will be ignored if a <db path> or an
+        existing database was added using the --db-path argument.
         '''),
         metavar='NAME',
         dest='dbname'
-    )
-
-    
-    '''
-
-    API Max retries
-    '''
-    twitter.add_argument(
-        '--max-retries',
-        type=int,
-        help='Number of times to retry API connection. Default 10.',
-        default=10,
-        metavar='RETRIES',
-        dest='max_retries'
     )
 
 
@@ -260,7 +263,7 @@ def main():
         '''.lstrip()
     )
 
-    
+
     '''
 
     Twitter: tweets
@@ -280,7 +283,7 @@ def main():
         '''.lstrip()
     )
 
-    
+
     '''
 
     Twitter: friendships
@@ -298,7 +301,7 @@ def main():
         '''.lstrip()
     )
 
-    
+
     '''
 
     Twitter argument groups
@@ -319,7 +322,7 @@ def main():
         description=''
     )
 
-    
+
     '''
 
     Twitter: user timelines-related arguments
@@ -411,8 +414,11 @@ def main():
         '-tz',
         '--timezone',
         type=str,
-        help='Converts UTC data from posts into specified timezone.',
+        help=aligntext('''Converts UTC data from posts into specified
+        timezone. Default Universal.
+        '''),
         metavar='TIMEZONE',
+        default='Universal',
         dest='timezone'
     )
 
@@ -514,8 +520,11 @@ def main():
         '-tz',
         '--timezone',
         type=str,
-        help='Converts UTC data from posts into specified timezone.',
+        help=aligntext('''Converts UTC data from posts into specified
+        timezone. Default Universal.
+        '''),
         metavar='TIMEZONE',
+        default='Universal',
         dest='timezone'
     )
 
@@ -576,12 +585,12 @@ def main():
         dest='count'
     )
 
-
     '''
 
     Get arguments
     '''
     args = vars(parser.parse_args())
+
 
     # Logs
     printl('Welcome', color='CYAN')

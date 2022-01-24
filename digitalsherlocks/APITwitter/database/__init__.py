@@ -18,6 +18,9 @@ import requests
 # import log utils
 from logs import printl
 
+# import from modules
+from sqlite3 import OperationalError
+
 # Database class
 class Database(object):
 	'''
@@ -68,15 +71,15 @@ class Database(object):
 		else:
 			isfile = os.path.isfile(self.dbpath)
 			if not isfile and self.update_database == True:
-				print ('')
 				printl(
 					f'The file {self.dbpath} was not found.',
 					color='RED'
 				)
-				print (
+				printl(
 					'Please try again with the correct file.',
 					color='RED'
 				)
+				printl('Program closed', color='GREEN')
 
 				# Quit program
 				sys.exit()
@@ -86,13 +89,90 @@ class Database(object):
 		dbfile = os.path.abspath(dbfile)
 		return dbfile.replace(os.sep, '/')
 
-	def _return_database_attrs(self, db_connection, db_cursor):
-		'''
-		'''
-		sql = '''
+	def _get_db_attrs(self, data):
 		'''
 
-		pass
+		Gets data from _return_database_attrs.
+		If tweets, argument will be q < query >
+		If users, argument will be user_id. Will update database
+			based on the user id.
+		'''
+		obj = {
+			'tweets': 'q',
+			'users': 'user_id'
+		}
+
+		args = []
+		for item in data:
+			tmp = {
+				obj[item[1]]: item[0] if item[4] == None else item[4],
+				'endpoint': item[1],
+				'since_id': item[2],
+				'timezone': item[3]
+			}
+
+			# append args
+			args.append(tmp)
+
+		return args
+
+	def _return_database_attrs(self, db_connection, db_cursor):
+		'''
+
+		Gets database attrs.
+		Return: dict < kwargs >
+		'''
+		sql = '''
+		SELECT
+			search_request, endpoint_type, MAX(id), timezone,
+			CASE WHEN endpoint_type = 'users'
+				THEN user_id
+				ELSE NULL
+			END
+		FROM tweet
+		GROUP BY search_request
+		'''
+		try:
+			db_cursor.execute(sql)
+		except OperationalError:
+			'''
+
+			Error found. Incorrect database.
+			'''
+			db_cursor.execute("PRAGMA database_list")
+			rows = db_cursor.fetchall()
+
+			# Get main db
+			main_db = [
+				i[2] for i in rows if i[1] == 'main' and i[2] != None
+			][0]
+
+			# Transform db path
+			main_db = main_db.replace(os.sep, '/')
+
+			printl(
+				f'Error found: Incorrect database: {main_db}',
+				color='RED'
+			)
+			printl(
+				'Database should contain tweets or user timelines',
+				color='RED'
+			)
+			printl(
+				'Please try again with the correct file.',
+				color='RED'
+			)
+			printl('Program closed', color='GREEN')
+			
+			
+			# Quit program
+			sys.exit()
+
+
+		# Get data
+		data = [i for i in db_cursor.fetchall()]
+
+		return self._get_db_attrs(data) 
 
 	def _connect_db(self):
 		'''

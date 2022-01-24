@@ -186,6 +186,7 @@ def get_tweet_data(raw_data, timezone, search_request, endpoint):
     # Adding search request
     data['search_request'] = search_request
     data['endpoint_type'] = endpoint
+    data['timezone'] = timezone
 
     # replace null values by None
     data = data.where((pd.notnull(data)), None)
@@ -223,11 +224,11 @@ def insert_tweet_data(db_connection, cursor, raw_data, timezone,
         'rt_original_date_minute', 'rt_original_date_second',
         'rt_original_date_quarter', 'rt_original_date_dayofyear',
         'rt_original_date_weekofyear', 'lang_code', 'place_id', 'counter',
-        'search_request', 'endpoint_type'
+        'search_request', 'endpoint_type', 'timezone'
     ) VALUES(
         ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
         ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-        ?, ?, ?, ?, ?, ?, ?, ?
+        ?, ?, ?, ?, ?, ?, ?, ?, ?
     )
     ON CONFLICT (id) DO
     UPDATE SET

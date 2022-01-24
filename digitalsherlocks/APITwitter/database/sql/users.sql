@@ -104,6 +104,7 @@ CREATE TABLE tweet(
   counter INTEGER,
   search_request VARCHAR NOT NULL,
   endpoint_type VARCHAR NOT NULL,
+  timezone TEXT,
   PRIMARY KEY (id)
 );
 

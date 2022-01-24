@@ -174,7 +174,7 @@ def order_columns_to_sql(key):
             'rt_original_date_minute', 'rt_original_date_second',
             'rt_original_date_quarter', 'rt_original_date_dayofyear',
             'rt_original_date_weekofyear', 'lang_code', 'place_id', 'counter',
-            'search_request', 'endpoint_type'
+            'search_request', 'endpoint_type', 'timezone'
         ],
         'media': [
             'id', 'id_str', 'url', 'expanded_url', 'media_url_https', 'type',

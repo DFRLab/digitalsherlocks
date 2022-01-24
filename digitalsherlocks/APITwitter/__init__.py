@@ -59,9 +59,6 @@ class ApiTwitter(object):
 		self.UAuth = self.TwitterAuth.connect()
 		printl('Authentication completed', color='BLUE')
 
-		# Twitter API connection - retries
-		self.max_retries = self.kwargs['max_retries']
-
 		# Get working directory
 		self.wd = self.kwargs['wd']
 
@@ -71,6 +68,7 @@ class ApiTwitter(object):
 
 		# Get database-related arguments
 		self.update_database = self.kwargs['update_database']
+		self.update_db_attrs = self.kwargs['update_db_attrs']
 		self.dbpath = self.kwargs['dbpath']
 		self.dbname = self.kwargs['dbname']
 
@@ -96,17 +94,19 @@ class ApiTwitter(object):
 		Modify kwargs if database will be updated using database
 		attrs: [usernames, queries]
 		'''
-
-
-		'''
-
-		if self.update_database and self.update_attrs:
-			self.kwargs = self.db._return_database_attrs(
+		self.db_attrs = []
+		if self.update_database and self.update_db_attrs:
+			tmp_db_attrs = self.db._return_database_attrs(
 				self.db_connection, self.db_cursor
 			)
 
+			# Building new arguments
+			for obj in tmp_db_attrs:
+				tmp = (
+					lambda d: d.update(obj) or d
+				)(self.kwargs)
 
-		'''
+				self.db_attrs.append(tmp)
 
 		# Collected data
 		self.data = []
@@ -123,6 +123,9 @@ class ApiTwitter(object):
 			search = self.kwargs['screen_name'] \
 				if 'screen_name' in self.kwargs.keys() \
 				else self.kwargs['user_id']
+
+			if self.db_attrs:
+				search = f'{search} < cli update >'
 		else:
 			search = self.kwargs['q']
 
@@ -228,7 +231,7 @@ class ApiTwitter(object):
 		self.kwargs = clean_twitter_arguments(self.kwargs)
 
 		# Adding tweet mode
-		self.kwargs['tweet_mode'] = 'extended'
+		self.kwargs['tweet_mode'] = 'extended'		
 
 		'''
 
@@ -516,6 +519,25 @@ class ApiTwitter(object):
 			printl('Dev Diagnosis', color='RED')
 			printl(f'> {statuses}', color='RED')
 			printl('Program closed', color='GREEN')
+
+		return
+
+	def _update_database_using_attrs(self):
+		'''
+		'''
+		for obj in self.db_attrs:
+			self.kwargs = obj
+
+			# Set timezone and endpoint
+			self.timezone = obj['timezone']
+			self.endpoint = obj['endpoint']
+
+			# Run API
+			if self.endpoint == 'users':
+				self.user_timeline()
+
+			if self.endpoint == 'tweets':
+				self.search_tweets()
 
 		return
 

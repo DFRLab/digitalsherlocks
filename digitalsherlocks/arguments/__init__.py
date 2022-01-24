@@ -108,22 +108,26 @@ class ProcessArguments(object):
 
 		'''
 		
-		TEST API
+		TMP API
 
 		-> Twitter
+		-> TODO: Improve
 
 		'''
 		api_twitter = ApiTwitter(**kwargs)
 
 		# Service < tmp process >
-		if service == 'twitter':
-			endpoint = kwargs['endpoint']
+		if service == 'twitter' and kwargs['update_db_attrs']:
+			api_twitter._update_database_using_attrs()
+		else:
+			if service == 'twitter':
+				endpoint = kwargs['endpoint']
 
-			if endpoint == 'users':
-				api_twitter.user_timeline()
+				if endpoint == 'users':
+					api_twitter.user_timeline()
 
-			if endpoint == 'tweets':
-				api_twitter.search_tweets()
+				if endpoint == 'tweets':
+					api_twitter.search_tweets()
 
-			if endpoint == 'friendships':
-				api_twitter.friendships()
+				if endpoint == 'friendships':
+					api_twitter.friendships()
