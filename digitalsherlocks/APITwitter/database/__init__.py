@@ -97,6 +97,19 @@ class Database(object):
 		If users, argument will be user_id. Will update database
 			based on the user id.
 		'''
+
+		# Test objects
+		test = [
+			i for i in data if 'cli update' in i[0]
+		]
+
+		if test:
+			data = [
+				i for i in data if i[1] == 'tweets'
+				or 'cli update' in i[0]
+			]
+
+		# Building database arguments
 		obj = {
 			'tweets': 'q',
 			'users': 'user_id'
@@ -122,6 +135,7 @@ class Database(object):
 		Gets database attrs.
 		Return: dict < kwargs >
 		'''
+
 		sql = '''
 		SELECT
 			search_request, endpoint_type, MAX(id), timezone,
@@ -132,6 +146,7 @@ class Database(object):
 		FROM tweet
 		GROUP BY search_request
 		'''
+
 		try:
 			db_cursor.execute(sql)
 		except OperationalError:
@@ -163,7 +178,6 @@ class Database(object):
 				color='RED'
 			)
 			printl('Program closed', color='GREEN')
-			
 			
 			# Quit program
 			sys.exit()

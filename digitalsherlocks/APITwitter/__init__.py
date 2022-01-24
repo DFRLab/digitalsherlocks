@@ -102,10 +102,12 @@ class ApiTwitter(object):
 
 			# Building new arguments
 			for obj in tmp_db_attrs:
+				e = obj['endpoint']
 				tmp = (
-					lambda d: d.update(obj) or d
-				)(self.kwargs)
+					lambda d: d.update(self.kwargs) or d
+				)(obj)
 
+				tmp['endpoint'] = e
 				self.db_attrs.append(tmp)
 
 		# Collected data
@@ -242,7 +244,7 @@ class ApiTwitter(object):
 		except KeyError:
 			u = self.kwargs['user_id']
 
-		printl(f'Downloading timeline from user {u}')
+		printl(f'Downloading timeline from user < {u} >')
 
 		'''
 
@@ -343,18 +345,20 @@ class ApiTwitter(object):
 					# Close program
 					printl('Program closed', color='GREEN')
 			else:
-				'''
+				if type(self.data) == list and not self.data:
+					printl(
+						f'No data available for user {u}',
+						color='YELLOW'
+					)
+				else:
+					'''
 
-				Dev Diagnosis
-				'''
-				printl(
-					f'No data available for users {u}',
-					color='YELLOW'
-				)
-				printl('User timeline < state 1 >', color='RED')
-				printl('Dev Diagnosis', color='RED')
-				printl(f'> {self.data}', color='RED')
-				printl('Program closed', color='GREEN')
+					Dev Diagnosis
+					'''
+					printl('User timeline < state 1 >', color='RED')
+					printl('Dev Diagnosis', color='RED')
+					printl(f'> {self.data}', color='RED')
+					printl('Program closed', color='GREEN')
 		
 		return
 
