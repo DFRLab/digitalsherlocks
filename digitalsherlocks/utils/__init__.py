@@ -20,7 +20,6 @@ import os
 from pytz.exceptions import UnknownTimeZoneError
 from w3lib.html import replace_entities
 from bs4 import BeautifulSoup as bs
-from twitter import *
 
 # local modules
 from APITwitter.assets import stopwords
@@ -386,6 +385,10 @@ def create_db_file(folder, sqlpath):
     return conn, cursor
 
 
+
+
+
+
 # load credentials
 def load_credentials():
     '''
@@ -415,6 +418,10 @@ def twitter_auth():
     # authenticate
     Auth = OAuth(tkn, tkn_secret, consumer_k, consumer_secret)
     return Twitter(auth=Auth)
+
+
+
+
 
 
 '''
@@ -549,6 +556,12 @@ def bag_of_words(document, iso_lang):
 
     return ' '.join(split_document).strip()
 
+
+
+
+
+
+
 # sleep application
 def sleep_application(api_connection, type_of_query):
     ''' Checks the number of requests and returns the remaining and reset values
@@ -563,6 +576,12 @@ def sleep_application(api_connection, type_of_query):
         rls = rate_limit_status['resources']['statuses'][target]
     
     return rls['remaining'], rls['reset']
+
+
+
+
+
+
 
 '''
 Processing data to build a network-like dataset
