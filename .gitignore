@@ -30,6 +30,12 @@ test7/
 test8/
 test9/
 
+**/APIBuzzsumo
+**/APICrowdtangle
+**/APIExplore
+**/APIReddit
+**/APITelegram
+
 # Ignore test data folders
 **/test-data
 test-data/
