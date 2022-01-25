@@ -269,6 +269,17 @@ class TwitterAuthentication(object):
 
 		# Check specs / Open authorization URL
 		is_colab = 'google.colab' in sys.modules
+
+		print ('')
+		print ('')
+		print (is_colab)
+		print ('')
+		print ('')
+		print (sys.modules)
+		print ('')
+		print ('')
+		print ('')
+
 		if is_colab:
 			printl(
 				f'Open url: {authorization_url}'
