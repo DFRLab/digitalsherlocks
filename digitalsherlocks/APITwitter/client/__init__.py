@@ -18,6 +18,7 @@ Twitter User Authentication
 
 # import modules
 import os
+import sys
 import configparser
 
 # import server modules
@@ -266,8 +267,14 @@ class TwitterAuthentication(object):
 			request_token=oauth_token
 		)
 
-		# Open authorization URL
-		webbrowser.open(authorization_url)
+		# Check specs / Open authorization URL
+		is_colab = 'google.colab' in sys.modules
+		if is_colab:
+			printl(
+				f'Open url: {authorization_url}'
+			)
+		else:
+			webbrowser.open(authorization_url)
 
 		# Get verifier
 		printl('Input required', color='BLUE')

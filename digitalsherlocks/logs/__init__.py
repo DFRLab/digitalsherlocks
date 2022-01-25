@@ -10,6 +10,7 @@
 # =========================================
 
 # import modules
+import sys
 import time
 
 # Import logs modules
@@ -39,8 +40,11 @@ def log_time_fmt():
 def printl(text, style='BRIGHT', color='WHITE'):
     '''
 
-    prints logs
+    print logs
     '''
+    is_colab = 'google.colab' in sys.modules
+    color = 'BLACK' if is_colab else color
+
     # Style
     s = {
         'DIM': Style.DIM,
