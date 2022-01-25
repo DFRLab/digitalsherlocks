@@ -64,44 +64,22 @@ def main():
     parser = ArgumentParser(
         prog='digitalsherlocks'
     )
-    
-    '''
-
-    Text formatter -> RawTextHelpFormatter
-    '''
-    indent_formatter = lambda prog: RawTextHelpFormatter(
-        prog,
-        width=shutil.get_terminal_size().columns,
-        max_help_position=500
-    )
 
     # adding subparser
     subparser = parser.add_subparsers(
         title='Command line interface [cli]',
         description='',
-        metavar='subcommand\n'
+        metavar='subcommand'
     )
 
     # creating CLI parser
     cli = subparser.add_parser(
         'cli',
-        formatter_class=indent_formatter,
         description='''
         Allows using tool through the command line
         ==========================================
         ''',
-        help='Allows using digitalsherlocks through the command line.',
-        epilog='''
-        
-        Examples:
-
-        Add a custom working directory.
-          $ digitalsherlocks cli -wd path/to/folder
-
-        Shows help message
-          $ digitalsherlocks cli -h
-          $ digitalsherlocks cli twitter -h
-        '''.lstrip()
+        help='Allows using digitalsherlocks through the command line.'
     )
 
     '''
@@ -112,9 +90,7 @@ def main():
         '-wd',
         '--working-dir',
         type=str,
-        help=aligntext('''Output directory. Specifies an optional
-        working directory. Default: current working directory.
-        '''),
+        help='Specifies an optional working directory.',
         metavar='WORKPATH',
         dest='wd'
     )
@@ -127,7 +103,7 @@ def main():
         title='CLI Arguments',
         description='',
         dest='service',
-        metavar='subcommand\n'
+        metavar='subcommand'
     )
 
 
@@ -137,34 +113,11 @@ def main():
     '''
     twitter = cli_args.add_parser(
         'twitter',
-        formatter_class=indent_formatter,
         description='''
         Connects to Twitter API using user authentication
         =================================================
         ''',
-        help='Connects to Twitter API using user authentication.',
-        epilog='''
-
-        Examples:
-
-        Create a new database with a custom name
-          $ digitalsherlocks cli twitter --add-db-name myresearch
-
-        Update an existing database
-          $ digitalsherlocks cli twitter --update-database --db-path path/file.db
-
-        Update an existing database using previous searches.
-          $ digitalsherlocks cli twitter --update-database --db-path path/file.db --using-db-attrs
-
-        Shows help message for Twitter user-timeline endpoint
-          $ digitalsherlocks cli twitter users -h
-
-        Shows help message for Twitter search tweets endpoint
-          $ digitalsherlocks cli twitter tweets -h
-
-        Shows help message for friendships-related endpoints
-          $ digitalsherlocks cli twitter friendships -h
-        '''.lstrip()
+        help='Connects to Twitter API using user authentication.'
     )
 
     
@@ -186,10 +139,7 @@ def main():
     twitter.add_argument(
         '--db-path',
         type=str,
-        help=aligntext('''Reads an existing database or creates a new
-        database using this path. Argument is
-        required, if <update database> is true.
-        '''),
+        help='Reads an existing database or creates a new database using this path.',
         metavar='FILE.db',
         dest='dbpath',
         required='--update-database' in sys.argv
@@ -198,10 +148,7 @@ def main():
     # update an exiting database using db attrs [previous searches]
     twitter.add_argument(
         '--using-db-attrs',
-        help=aligntext('''Updates database using previous searches
-        only. Keep in mind that any subcomnand [users, tweets,
-        friendships] will be ignored if --using-db-attrs is 
-        '''),
+        help='Updates database using previous searches only.',
         action='store_true',
         default=False,
         dest='update_db_attrs'
@@ -211,10 +158,7 @@ def main():
     twitter.add_argument(
         '--add-db-name',
         type=str,
-        help=aligntext('''Creates a custom database name. Default:
-        data.db. This argument will be ignored if a <db path> or an
-        existing database was added using the --db-path argument.
-        '''),
+        help='Creates a custom database name.',
         metavar='NAME',
         dest='dbname'
     )
@@ -228,7 +172,7 @@ def main():
         title='Twitter arguments',
         description='',
         dest='endpoint',
-        metavar='subcommand\n'
+        metavar='subcommand'
     )
 
 
@@ -239,28 +183,11 @@ def main():
     '''
     twitter_users = twitter_subparsers.add_parser(
         'users',
-        formatter_class=indent_formatter,
         description='''
         Returns a collection of Tweets posted by the user
         =================================================
         ''',
-        help='Returns a collection of Tweets posted by the user.',
-        epilog='''
-
-        Examples:
-
-        Get user timeline from POTUS (by default, this command will include replies but not retweets)
-          $ digitalsherlocks cli twitter users --user-name-timeline POTUS
-
-        Get user timeline from user id 1234567
-          $ digitalsherlocks cli twitter users --user-id-timeline 1234567
-
-        Get user timeline from POTUS, including retweets but excluding replies
-          $ digitalsherlocks cli twitter users --user-name-timeline POTUS --include-rts --exclude-replies
-
-        Get user timeline from POTUS, including both retweets and replies
-          $ digitalsherlocks cli twitter users --user-name-timeline POTUS --include-rts
-        '''.lstrip()
+        help='Returns a collection of Tweets posted by the user.'
     )
 
 
@@ -272,15 +199,11 @@ def main():
 
     twitter_tweets = twitter_subparsers.add_parser(
         'tweets',
-        formatter_class=indent_formatter,
         description='''
         Returns a collection of Tweets
         ==============================
         ''',
-        help='Returns a collection of Tweets matching a query.',
-        epilog='''
-
-        '''.lstrip()
+        help='Returns a collection of Tweets matching a query.'
     )
 
 
@@ -296,9 +219,7 @@ def main():
         Get followers and friends of one arbitrary user
         ===============================================
         ''',
-        help='Returns followers and friends of one arbitrary user.',
-        epilog='''
-        '''.lstrip()
+        help='Returns followers and friends of one arbitrary user.'
     )
 
 
@@ -332,9 +253,7 @@ def main():
     twitter_user_args.add_argument(
         '--user-name-timeline',
         type=str,
-        help=aligntext('''Returns a collection of the most recent
-        Tweets posted by the user indicated by the screen_name.
-        '''),
+        help='Returns a collection of the most recent Tweets posted by the user indicated by the screen_name.',
         metavar='NAME',
         dest='screen_name',
         required=not '--user-id-timeline' in sys.argv
@@ -344,9 +263,7 @@ def main():
     twitter_user_args.add_argument(
         '--user-id-timeline',
         type=str,
-        help=aligntext('''Returns a collection of the most recent
-        Tweets posted by the user indicated by the user_id.
-        '''),
+        help='Returns a collection of the most recent Tweets posted by the user indicated by the user_id.',
         metavar='ID',
         dest='user_id',
         required=not '--user-name-timeline' in sys.argv
@@ -355,9 +272,7 @@ def main():
     # exclude replies
     twitter_user_args.add_argument(
         '--exclude-replies',
-        help=aligntext('''Prevents replies from appearing in the
-        returned timeline. Default: False.
-        '''),
+        help='Prevents replies from appearing in the returned timeline. Default: False.',
         action='store_true',
         default=False,
         dest='exclude_replies'
@@ -366,9 +281,7 @@ def main():
     # include retweets
     twitter_user_args.add_argument(
         '--include-rts',
-        help=aligntext('''Includes retweets in the returned timeline.
-        Default: False.
-        '''),
+        help='Includes retweets in the returned timeline. Default: False.',
         action='store_true',
         default=False,
         dest='include_rts'
@@ -378,9 +291,7 @@ def main():
     twitter_user_args.add_argument(
         '--since-id',
         type=str,
-        help=aligntext('''Returns results with an ID greater than
-        (that is, more recent than) the specified ID. Default 1.
-        '''),
+        help='Returns results with an ID greater than (that is, more recent than) the specified ID. Default 1.',
         metavar='ID',
         default='1',
         dest='since_id'
@@ -390,9 +301,7 @@ def main():
     twitter_user_args.add_argument(
         '--max-id',
         type=str,
-        help=aligntext('''Returns results with an ID less than
-        (that is, older than) or equal to the specified ID.
-        '''),
+        help='Returns results with an ID less than (that is, older than) or equal to the specified ID.',
         metavar='ID',
         dest='max_id'
     )
@@ -401,9 +310,7 @@ def main():
     twitter_user_args.add_argument(
         '--count',
         type=int,
-        help=aligntext('''Number of tweets to return per request.
-        Max 200. Default 200.
-        '''),
+        help='Number of tweets to return per request. Max 200. Default 200.',
         metavar='NUMBER',
         default=200,
         dest='count'
@@ -414,9 +321,7 @@ def main():
         '-tz',
         '--timezone',
         type=str,
-        help=aligntext('''Converts UTC data from posts into specified
-        timezone. Default Universal.
-        '''),
+        help='Converts UTC data from posts into specified timezone. Default Universal.',
         metavar='TIMEZONE',
         default='Universal',
         dest='timezone'
@@ -433,9 +338,7 @@ def main():
         '-q',
         '--query',
         type=str,
-        help=aligntext('''A search query of 500 characters maximum,
-        including operators.
-        '''),
+        help='A search query of 500 characters maximum, including operators.',
         metavar='QUERY',
         dest='q',
         required=True
@@ -458,10 +361,7 @@ def main():
         '--result-type',
         type=str,
         choices=['popular', 'mixed', 'recent'],
-        help=aligntext('''Specifies what type of search results you
-        would prefer to receive. Options: mixed, popular, recent.
-        Default mixed.
-        '''),
+        help='Specifies type of search results. Options: mixed, popular, recent. Default mixed.',
         metavar='TYPE',
         default='mixed',
         dest='result_type'
@@ -471,9 +371,7 @@ def main():
     twitter_tweets_args.add_argument(
         '--count',
         type=int,
-        help=aligntext('''Number of tweets to return per request.
-        Max 100. Default 100.
-        '''),
+        help='Number of tweets to return per request. Max 100. Default 100.',
         metavar='NUMBER',
         default=100,
         dest='count'
@@ -483,11 +381,7 @@ def main():
     twitter_tweets_args.add_argument(
         '--until',
         type=str,
-        help=aligntext('''Returns tweets created before the given
-        date. Date should be formatted as YYYY-MM-DD. Keep in mind
-        that the search index has a 7-day limit and returned data
-        is UTC.
-        '''),
+        help='Returns tweets created before the given date.',
         metavar='DATE',
         dest='until'
     )
@@ -496,9 +390,7 @@ def main():
     twitter_tweets_args.add_argument(
         '--since-id',
         type=str,
-        help=aligntext('''Returns results with an ID greater than
-        (that is, more recent than) the specified ID. Default 1.
-        '''),
+        help='Returns results with an ID greater than (that is, more recent than) the specified ID. Default 1.',
         metavar='ID',
         default='1',
         dest='since_id'
@@ -508,9 +400,7 @@ def main():
     twitter_tweets_args.add_argument(
         '--max-id',
         type=str,
-        help=aligntext('''Returns results with an ID less than
-        (that is, older than) or equal to the specified ID.
-        '''),
+        help='Returns results with an ID less than (that is, older than) or equal to the specified ID.',
         metavar='ID',
         dest='max_id'
     )
@@ -520,9 +410,7 @@ def main():
         '-tz',
         '--timezone',
         type=str,
-        help=aligntext('''Converts UTC data from posts into specified
-        timezone. Default Universal.
-        '''),
+        help='Converts UTC data from posts into specified timezone. Default Universal.',
         metavar='TIMEZONE',
         default='Universal',
         dest='timezone'
@@ -565,9 +453,7 @@ def main():
     twitter_friendships_args.add_argument(
         '--cursor',
         type=int,
-        help=aligntext('''Causes the list of connections to be broken
-        into pages of no more than 5000 IDs at a time. Default -1
-        '''),
+        help='Causes the list of connections to be broken into pages of no more than 5000 IDs at a time. Default -1',
         metavar='CURSOR',
         default=-1,
         dest='cursor'
@@ -577,9 +463,7 @@ def main():
     twitter_friendships_args.add_argument(
         '--count',
         type=int,
-        help=aligntext('''Specifies the number of IDs attempt
-        retrieval of. Max 5,000 per distinct request. Default 5,000.
-        '''),
+        help='Specifies the number of IDs attempt retrieval of. Max 5,000 per distinct request. Default 5,000.',
         metavar='NUMBER',
         default=5000,
         dest='count'
