@@ -66,7 +66,7 @@ class HTTPHandler(BaseHTTPRequestHandler):
 			fp = requests.get(url)		
 			self.wfile.write(fp.text.encode())
 		else:
-			self.send_response(301)
+			self.send_response(307)
 			self.send_header(
 				'Location',
 				'https://dfrlab.s3.us-west-2.amazonaws.com/digitalsherlocks/callback/index.html'
