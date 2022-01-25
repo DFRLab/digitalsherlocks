@@ -157,16 +157,28 @@ class TwitterAuthentication(object):
 	CONSUMER_KEY, CONSUMER_SECRET = API_CREDENTIALS.decrypt()
 
 	# Server session
+
+	'''
+
 	SERVER_SESSION = Server()
+
+	localhost callback Uri.
+	http://127.0.0.1:8507/callback
+
+	self.callback_uri = 'http://127.0.0.1:8507/callback'
+	'''
 
 
 	def __init__(self):
 		'''
 		'''
 		# Twitter API session
+		BASE = 'https://dfrlab.s3.us-west-2.amazonaws.com'
+		CALLBACK = 'digitalsherlocks/callback/index.html'
+
 		self.consumer_key = self.CONSUMER_KEY
 		self.consumer_secret = self.CONSUMER_SECRET
-		self.callback_uri = 'http://127.0.0.1:8507/callback'
+		self.callback_uri = f'{BASE}/{CALLBACK}'
 		self.session = None
 
 		# User API access
@@ -183,7 +195,10 @@ class TwitterAuthentication(object):
 		'''
 
 		# Start Localhost server
+		'''
+
 		self.SERVER_SESSION.start()
+		'''
 
 		# API session
 		return OAuth1Session(
@@ -282,7 +297,10 @@ class TwitterAuthentication(object):
 		)
 
 		# Stop Localhost server
+		'''
+
 		self.SERVER_SESSION.stop()
+		'''
 
 		# Get access tokens
 		params = {
