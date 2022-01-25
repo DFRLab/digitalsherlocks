@@ -50,17 +50,26 @@ class HTTPHandler(BaseHTTPRequestHandler):
 		'''
 		GET request
 		'''
-		self.send_response(200)
-		self.send_header('Content-type', 'text/html')
-		self.end_headers()
+		is_colab = 'COLAB_GPU' in os.environ
+		if not is_colab:
+			self.send_response(200)
+			self.send_header('Content-type', 'text/html')
+			self.end_headers()
 
-		# Render HTML file
-		path = 'digitalsherlocks/callback/index.html'
-		url = f'https://dfrlab.s3.us-west-2.amazonaws.com/{path}'
-		
-		# Get HTML file
-		fp = requests.get(url)		
-		self.wfile.write(fp.text.encode())
+			# Render HTML file
+			path = 'digitalsherlocks/callback/index.html'
+			url = f'https://dfrlab.s3.us-west-2.amazonaws.com/{path}'
+			
+			# Get HTML file
+			fp = requests.get(url)		
+			self.wfile.write(fp.text.encode())
+		else:
+			self.send_response(303)
+			self.send_header(
+				'Location',
+				'https://dfrlab.s3.us-west-2.amazonaws.com/digitalsherlocks/callback/index.html'
+			)
+			self.end_headers()
 
 	def log_message(self, format, *args):
 		'''
