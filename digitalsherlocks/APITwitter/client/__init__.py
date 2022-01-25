@@ -79,7 +79,7 @@ class Server(threading.Thread):
 
 	# Server localhost and port
 	HOST = ''
-	PORT = 8080
+	PORT = 8507
 
 	def run(self):
 		'''
@@ -166,7 +166,7 @@ class TwitterAuthentication(object):
 		# Twitter API session
 		self.consumer_key = self.CONSUMER_KEY
 		self.consumer_secret = self.CONSUMER_SECRET
-		self.callback_uri = 'http://127.0.0.1:8080/callback'
+		self.callback_uri = 'http://127.0.0.1:8507/callback'
 		self.session = None
 
 		# User API access
@@ -271,10 +271,8 @@ class TwitterAuthentication(object):
 
 		# Get verifier
 		printl('Input required', color='BLUE')
-		self.verifier = printl(
-			'Please, copy and add PIN: ',
-			color='WHITE',
-			inp=True
+		self.verifier = input(
+			'Please, add PIN: '
 		)
 
 		# Stop Localhost server
