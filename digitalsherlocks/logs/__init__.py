@@ -43,7 +43,7 @@ def printl(text, style='BRIGHT', color='WHITE'):
     print logs
     '''
     is_colab = 'COLAB_GPU' in os.environ
-    color = 'BLACK' if is_colab else color
+    color = 'BLACK' if is_colab and color == 'WHITE' else color
 
     # Style
     s = {
