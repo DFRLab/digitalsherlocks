@@ -10,7 +10,7 @@
 # =========================================
 
 # import modules
-import sys
+import os
 import time
 
 # Import logs modules
@@ -42,7 +42,7 @@ def printl(text, style='BRIGHT', color='WHITE'):
 
     print logs
     '''
-    is_colab = 'google.colab' in sys.modules
+    is_colab = 'COLAB_GPU' in os.environ
     color = 'BLACK' if is_colab else color
 
     # Style

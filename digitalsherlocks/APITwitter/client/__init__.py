@@ -18,7 +18,6 @@ Twitter User Authentication
 
 # import modules
 import os
-import sys
 import configparser
 
 # import server modules
@@ -268,14 +267,11 @@ class TwitterAuthentication(object):
 		)
 
 		# Check specs / Open authorization URL
-		is_colab = 'google.colab' in sys.modules
+		is_colab = 'COLAB_GPU' in os.environ
 
 		print ('')
 		print ('')
 		print (is_colab)
-		print ('')
-		print ('')
-		print (sys.modules)
 		print ('')
 		print ('')
 		print ('')
