@@ -214,7 +214,6 @@ def main():
     '''
     twitter_friendships = twitter_subparsers.add_parser(
         'friendships',
-        formatter_class=indent_formatter,
         description='''
         Get followers and friends of one arbitrary user
         ===============================================
@@ -349,9 +348,7 @@ def main():
         '-l',
         '--language',
         type=str,
-        help=aligntext('''Restricts tweets to the given language,
-        given by an ISO 639-1 code.
-        '''),
+        help='Restricts tweets to the given language, given by an ISO 639-1 code.',
         metavar='LANGUAGE',
         dest='lang'
     )
