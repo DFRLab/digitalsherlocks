@@ -10,7 +10,7 @@
 ---
 
 
-[![Open In Collab](https://colab.research.google.com/assets/colab-badge.svg)]()
+[![Open In Collab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1MOfLNuAISyZ3KtCWr3ZWHPw61fS1aKJJ?usp=sharing)
 [![GitHub forks](https://img.shields.io/github/forks/DFRLab/digitalsherlocks.svg?style=social&label=Fork&maxAge=2592000)](https://GitHub.com/DFRLab/digitalsherlocks/network/)
 [![GitHub stars](https://badgen.net/github/stars/DFRLab/digitalsherlocks)](https://GitHub.com/DFRLab/digitalsherlocks/stargazers/)
 [![GitHub watchers](https://img.shields.io/github/watchers/DFRLab/digitalsherlocks.svg?style=social&label=Watch&maxAge=2592000)](https://GitHub.com/DFRLab/digitalsherlocks/watchers/)
