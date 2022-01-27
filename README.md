@@ -5,6 +5,10 @@
 
 ---
 
+*Manteiner/Dev: [Esteban Ponce de León](https://twitter.com/estebanpdl).*
+
+---
+
 
 [![Open In Collab](https://colab.research.google.com/assets/colab-badge.svg)]()
 [![GitHub forks](https://img.shields.io/github/forks/DFRLab/digitalsherlocks.svg?style=social&label=Fork&maxAge=2592000)](https://GitHub.com/DFRLab/digitalsherlocks/network/)
