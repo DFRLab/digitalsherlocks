@@ -5,7 +5,7 @@
 
 ---
 
-*Manteiner/Dev: [Esteban Ponce de León](https://twitter.com/estebanpdl).*
+*Maintainer/Dev: [Esteban Ponce de León](https://twitter.com/estebanpdl).*
 
 ---
 
