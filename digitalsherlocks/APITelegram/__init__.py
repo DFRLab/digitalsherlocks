@@ -6,6 +6,6 @@
 #
 # Author: @estebanpdl
 #
-# File: Twitter API requests.
+# File: Telegram API requests.
 # =========================================
 

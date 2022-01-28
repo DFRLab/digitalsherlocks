@@ -115,7 +115,7 @@ class ManageAPICredentials(object):
 		self.req = req
 		self.key = key
 
-		# get credentials
+		# Get credentials
 		self.credentials = self.req.json()
 		self.fernet = Fernet(self.key.encode())
 
