@@ -284,14 +284,13 @@ class TwitterAuthentication(object):
 
 		# Check specs / Open authorization URL
 		is_colab = 'google.colab' in sys.modules
-		if is_colab:
-			printl(
-				f'Open url: {authorization_url}'
-			)
-		else:
+		if not is_colab:
 			webbrowser.open(authorization_url)
 
 		# Get verifier
+		printl(
+			f'Open url: {authorization_url}'
+		)
 		printl('Input required', color='BLUE')
 		self.verifier = input(
 			'Please, add PIN: '
